@@ -1,3 +1,7 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 typedef struct jogador{
     int id;
     int num_camisa;
@@ -16,10 +20,20 @@ typedef struct jogador{
 typedef struct arvbm{
     int folha;
     int nchaves;
-    struct arvbm * prox;
-    TJ * chaves;
-    struct arvbm ** filhos;
-}
+    char* prox;
+    char** chaves;
+    char** filhos;
+}TABM;
+
+
+TABM *TABM_cria(int t);
+TABM *TABM_inicializa(void);
+TABM *TABM_busca(TABM *a, int mat);
+TABM *TABM_insere(TABM *T, int mat, int t);
+TABM* TABM_retira(TABM* arv, int k, int t);
+void TABM_libera(TABM *a);
+void TABM_imprime(TABM *a);
+void TABM_imprime_chaves(TABM *a);
 
 // char data[] = "11 January 1996 (aged 28)";
 // // Usando sscanf para extrair os valores da string
@@ -37,11 +51,4 @@ typedef struct arvbm{
 // %d %19s %d (aged %d) lê o dia (inteiro), o mês (string de até 19 caracteres), o ano (inteiro) e a idade (inteiro).
 // %d/%d lê dois inteiros (para jogos e gols).
 // %49[^/] lê até 49 caracteres ou até encontrar um / (para o país).
-// %49[^\n] lê até 49 caracteres ou até encontrar uma nova linha (para o clube).
-
-
-/*
-quando pega o arqv de entrada, lê uma stringzona e joga no aqv certo
-
-
-*/
+// %49[^\n] lê até 49 caracteres ou até encontrar uma nova linha (para o clube)
