@@ -1,0 +1,10 @@
+0 ou 1 (folha)
+nchaves
+nome do arquivo prox
+c1 
+c3 
+c5 <-
+f0 
+f2 
+f4 <-
+f6
