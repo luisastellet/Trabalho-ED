@@ -1,12 +1,16 @@
 # Trabalho-ED
   O trabalho consistirá do gerenciamento de, pelo menos, algumas equipes da EURO 2024, usando uma
 Árvore B em memória secundária. Seu programa deve receber como entrada os seguintes parâmetros:
+
 → o grau mínimo da árvore B (t); e
+
 → o catálogo inicial, seguindo o formato pré-definido.
 
   O formato do catálogo é o que segue:
--> nome do país em uma linha; e
--> nas n linhas restantes (UM POR LINHA, COM CAMPOS SEPARADOS POR ‘/’):
+  
+→ nome do país em uma linha; e
+
+→ nas n linhas restantes (UM POR LINHA, COM CAMPOS SEPARADOS POR ‘/’):
 
 1. o identificador único do jogador;
 2. o número da camisa que ele usa em sua respectiva seleção;
