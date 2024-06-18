@@ -2,12 +2,15 @@
 nchaves
 nome do arquivo prox
 1/1/GK/Manuel Neuer/27 March 1986 (aged 38)/118/0/Germany/Bayern Munich
-3/17/MF/Florian Wirtz/3 May 2003 (aged 21)/17/1/Germany/Bayer Leverkusen 
+3/17/MF/Florian Wirtz/3 May 2003 (aged 21)/17/1/Germany/Bayer Leverkusen
 5/18/MF/Luka Ivanusec/26 November 1998 (aged 25)/20/2/Netherlands/Feyenoord
-f0 
-f2 
-f4 
+f0
+f2
+f4
 f6
+
+
+
 
 se for folha (scanf do 1° int), lê a linha
 se não for, desce pros arquivos fx
