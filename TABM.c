@@ -26,6 +26,7 @@ void TABM_cria(int t, int *cont){
     novo->chaves = (char**)malloc(sizeof(char*)*((t*2)-1));
     for(int i = 0; i < ((t*2)-1); i++) 
         novo->chaves[i] = malloc(sizeof(char)*8);
+    for(int i = 0; i < ((t*2)-1); i++) strcpy(novo->chaves[i],"Bebel");
 
 
     novo->filhos=(char**)malloc(sizeof(char*)*t*2);
@@ -43,8 +44,9 @@ void printa_arqb(char* entrada){
     TABM* novo = (TABM*)malloc(sizeof(TABM));
     fread(novo,sizeof(TABM),1,fp);
     printf("Folha: %d\n", novo->folha);
-    printf("Filhos: %d\n", novo->nchaves);
+    printf("N Chaves: %d\n", novo->nchaves);
     for (int i = 0; i < 4; i++) printf("%s\n",novo->filhos[i]);
+    for (int i = 0; i < 3; i++) printf("%s\n",novo->chaves[i]);
     printf("Proximo: %s\n", novo->prox);
 }
 
