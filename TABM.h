@@ -20,20 +20,11 @@ typedef struct jogador{
 typedef struct arvbm{
     int folha;
     int nchaves;
-<<<<<<< HEAD
     char* prox;
     char** chaves;
     char** filhos;
 }TABM;
 
-
-=======
-    struct arvbm * prox;
-    TJ * chaves;
-    struct arvbm ** filhos;
-}TABM;
-
->>>>>>> 50b9df1f10b4b387d3a4d1076ab9d3515463ec0b
 TABM *TABM_cria(int t);
 TABM *TABM_inicializa(void);
 TABM *TABM_busca(TABM *a, int mat);
@@ -51,7 +42,6 @@ void TABM_imprime_chaves(TABM *a);
 //            &id, &num_camisa, posicao, name, &dia, mes, &ano, &idade, &part_sel, &gol_sel, pais_time, time);
 
 // scanf(" %30[^\n]", j1.nome);
-
 
 // %d lê um inteiro.
 // %2s lê uma string de até 2 caracteres (para a posição do jogador).

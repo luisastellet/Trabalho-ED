@@ -7,8 +7,8 @@ typedef struct arvbm{
     int folha;
     int nchaves;
     char* prox;
-    char** chaves;
-    char** filhos;
+    char** chaves; //no max 284 chaves
+    char** filhos; //arq de 0000 até 9999
 }TABM;
 
 
@@ -17,20 +17,28 @@ char * TABM_cria(int t, int *cont){
     sprintf(filename, "Arquivos/%04d.bin", (*cont));
     FILE * fp = fopen(filename, "wb");
     if(!fp) exit(1);
-    TABM* novo = (TABM*)malloc(sizeof(TABM));
-    novo->folha = 1;
-    novo->nchaves = 0;
-    novo->prox = (char*)malloc(sizeof(char)*8);
-    char temp[] = "Miguel";
-    strcpy(novo->prox,temp);
-    novo->chaves = (char**)malloc(sizeof(char*)*((t*2)-1));
-    for(int i = 0; i < ((t*2)-1); i++) 
-        novo->chaves[i] = malloc(sizeof(char)*8);
-    novo->filhos=(char**)malloc(sizeof(char*)*t*2);
-    for(int i = 0; i < (t*2); i++) novo->filhos[i] = malloc(sizeof(char)*8);
+    //TABM* novo = (TABM*)malloc(sizeof(TABM));
 
-    for(int i = 0; i < (t*2); i++) strcpy(novo->filhos[i],"Luisa");
-    fwrite(novo, sizeof(TABM), 1, fp);
+    TABM novo;
+    novo.folha = 1;
+    novo.nchaves = 0;
+    novo.prox = (char*)malloc(sizeof(char)*7);
+    char temp[] = "Miguel";
+    strcpy(novo.prox, "MIGUEL");
+
+    //novo.chaves = (char**)malloc(sizeof(char)*(t*2)-1);
+    novo.chaves = (char**)malloc(sizeof(char*)*((t*2)-1));
+        for(int i = 0; i < ((t*2)-1); i++) 
+         novo.chaves[i] = malloc(sizeof(char)*6);
+    for(int i = 0; i < (t*2)-1; i++) strcpy(novo.chaves[i],"Bebel");
+
+
+    novo.filhos=(char**)malloc(sizeof(char*)*t*2);
+    for(int i = 0; i < (t*2); i++) novo.filhos[i] = malloc(sizeof(char)*6);
+    //novo.filhos = (char**)malloc(sizeof(char)*t*2);
+
+    for(int i = 0; i < (t*2); i++) strcpy(novo.filhos[i],"Luisa");
+    fwrite(&novo, sizeof(TABM), 1, fp);
     fclose(fp);
     (*cont)++;
     return filename;
@@ -38,12 +46,14 @@ char * TABM_cria(int t, int *cont){
 
 void printa_arqb(char* entrada){
     FILE* fp = fopen(entrada, "rb");
-    TABM* novo = (TABM*)malloc(sizeof(TABM));
-    fread(novo,sizeof(TABM),1,fp);
-    printf("Folha: %d\n", novo->folha);
-    printf("Filhos: %d\n", novo->nchaves);
-    for (int i = 0; i < 4; i++) printf("%s\n",novo->filhos[i]);
-    printf("Proximo: %s\n", novo->prox);
+    //TABM* novo = (TABM*)malloc(sizeof(TABM));
+    TABM novo;
+    fread(&novo,sizeof(TABM),1,fp);
+    printf("Folha: %d\n", novo.folha);
+    printf("N Chaves: %d\n", novo.nchaves);
+    for (int i = 0; i < 4; i++) printf("%s\n",novo.filhos[i]);
+    for (int i = 0; i < 3; i++) printf("%s\n",novo.chaves[i]);
+    printf("Proximo: %s\n", novo.prox);
 }
 
 
