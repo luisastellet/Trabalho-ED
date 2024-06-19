@@ -12,9 +12,9 @@ typedef struct arvbm{
 }TABM;
 
 
-void TABM_cria(int t, int *cont){
-    char * filename = (char*)malloc(sizeof(char)*21);
-    sprintf(filename, "arq%d.bin", (*cont));
+char * TABM_cria(int t, int *cont){
+    char * filename = (char*)malloc(sizeof(char)*25);
+    sprintf(filename, "Arquivos/%04d.bin", (*cont));
     FILE * fp = fopen(filename, "wb");
     if(!fp) exit(1);
     TABM* novo = (TABM*)malloc(sizeof(TABM));
@@ -26,8 +26,6 @@ void TABM_cria(int t, int *cont){
     novo->chaves = (char**)malloc(sizeof(char*)*((t*2)-1));
     for(int i = 0; i < ((t*2)-1); i++) 
         novo->chaves[i] = malloc(sizeof(char)*8);
-
-
     novo->filhos=(char**)malloc(sizeof(char*)*t*2);
     for(int i = 0; i < (t*2); i++) novo->filhos[i] = malloc(sizeof(char)*8);
 
@@ -35,7 +33,7 @@ void TABM_cria(int t, int *cont){
     fwrite(novo, sizeof(TABM), 1, fp);
     fclose(fp);
     (*cont)++;
-    return;
+    return filename;
 }
 
 void printa_arqb(char* entrada){
@@ -49,8 +47,6 @@ void printa_arqb(char* entrada){
 }
 
 
-
-
 TABM * inicializa(void){
     return NULL;
 } 
@@ -59,11 +55,11 @@ TABM * inicializa(void){
 int main(void){
     int cont = 0;
     int t;
+    char filename[25];
     printf("Insira o valor de t para a construcao da arvore: ");
     scanf("%d", &t);
-    TABM_cria(t,&cont);
-    printa_arqb("arq0.bin");
-
+    strcpy(filename, TABM_cria(t,&cont));
+    printa_arqb(filename);
 
     return 0;
 }
