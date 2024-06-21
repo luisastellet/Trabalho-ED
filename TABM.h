@@ -19,21 +19,18 @@ typedef struct jogador{
 }TJ;
 
 typedef struct arvbm{
-    int folha;
-    int nchaves;
-    char* prox;
-    TJ* chaves; //vetor de structs jogador
+    int folha; //4 0-3
+    int nchaves; //4 4-7
+    char* prox; //sizeof(char)*5 8-12
+    TJ* chaves; // 
     char** filhos; //arq de 0000 até 9999
 }TABM;
 
-TABM *TABM_cria(int t);
-TABM *TABM_inicializa(void);
-TABM *TABM_busca(TABM *a, int mat);
-TABM *TABM_insere(TABM *T, int mat, int t);
-TABM* TABM_retira(TABM* arv, int k, int t);
-void TABM_libera(TABM *a);
-void TABM_imprime(TABM *a);
-void TABM_imprime_chaves(TABM *a);
+char *TABM_cria(int t, int * cont);
+void TABM_insere(TJ jogador, int t, char ** raiz, int * cont);
+void le_dados(char * arquivo, char ** raiz, int t);
+void printa_arqb(char * entrada);
+
 
 // char data[] = "11 January 1996 (aged 28)";
 // // Usando sscanf para extrair os valores da string
