@@ -15,14 +15,15 @@ typedef struct jogador{
     int gol_sel;
     char pais_time[21];
     char time[31];
+    int capitao; // 1 ou 0 
 }TJ;
 
 typedef struct arvbm{
     int folha;
     int nchaves;
     char* prox;
-    char** chaves;
-    char** filhos;
+    TJ* chaves; //vetor de structs jogador
+    char** filhos; //arq de 0000 até 9999
 }TABM;
 
 TABM *TABM_cria(int t);
