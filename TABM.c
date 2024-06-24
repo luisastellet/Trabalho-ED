@@ -65,10 +65,11 @@ void TABM_insere(TJ jogador, int t, char ** raiz, int * cont){
         fclose(fraiz);
         return;
     }
-    fseek(fp, sizeof(int), SEEK_CUR);
-    int qtd_chaves;
-    fread(&qtd_chaves, sizeof(int), 1 , fp);
-    if(qtd_chaves == (2*t)-1){
+    fseek(fp, sizeof(int), SEEK_CUR);        //
+    int qtd_chaves;                          // Andamos no arquivo para ver a quantidade de chaves.
+    fread(&qtd_chaves, sizeof(int), 1 , fp); //
+
+    if(qtd_chaves == (2*t)-1){ //Se estiver cheio, vamos dividir e depois inserir não completo
         char S_arq[25];
         strcpy(S_arq, TABM_cria(t, cont));
         FILE *fs = fopen(S_arq, "rb");
@@ -86,11 +87,11 @@ void TABM_insere(TJ jogador, int t, char ** raiz, int * cont){
         //aqui tem q ver a relação dos filhos com os pais nos arquivos
         return;
     }
-    //strcpy(*raiz, insere_nao_completo(raiz, jogador, t));
+    //strcpy(*raiz, insere_nao_completo(raiz, jogador, t)); //Caso não, basta inserir não completo.
     fclose(fp);
     return;
 }
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -99,23 +100,31 @@ void TABM_insere(TJ jogador, int t, char ** raiz, int * cont){
 char * TABM_cria(int t, int *cont){
     char * filename = (char*)malloc(sizeof(char)*21);
     sprintf(filename, "Arquivos/%04d.bin", (*cont));
+
     FILE * fp = fopen(filename, "wb");
     if(!fp) exit(1);
+
     TABM novo;
     TJ jogador;
     novo.folha = 1;
     novo.nchaves = 0;
+
     novo.prox = (char*)malloc(sizeof(char)*5);
     char temp[] = "Prox";
     strcpy(novo.prox, "Prox");
+
     novo.chaves = (TJ*)malloc(sizeof(TJ)*((t*2)-1));
     for(int i = 0; i < (t*2)-1; i++) strcpy(novo.chaves[i].nome,"Chave");
+
     novo.filhos=(char**)malloc(sizeof(char*)*t*2);
     for(int i = 0; i < (t*2); i++) novo.filhos[i] = malloc(sizeof(char)*5);
     for(int i = 0; i < (t*2); i++) strcpy(novo.filhos[i],"Filh");
+
     fwrite(&novo, sizeof(TABM), 1, fp);
+    
     fclose(fp);
     (*cont)++;
+
     return filename;
 }
 
