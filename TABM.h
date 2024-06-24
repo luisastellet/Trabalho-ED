@@ -5,7 +5,7 @@
 typedef struct jogador{
     int id;
     int num_camisa;
-    char posicao[3];
+    char posicao[5];
     char nome[31];
     int dia;
     char mes[11];
@@ -18,18 +18,29 @@ typedef struct jogador{
     int capitao; // 1 ou 0 
 }TJ;
 
+
+/*
+int folha; //4 0-3
+int nchaves; //4 4-7
+char* prox; //sizeof(char)*5 8-12
+TJ * chaves; // 
+char** filhos; //arq de 0000 até 9999
+
+*/
 typedef struct arvbm{
     int folha; //4 0-3
     int nchaves; //4 4-7
     char* prox; //sizeof(char)*5 8-12
-    TJ* chaves; // 
+    TJ * chaves; // 
     char** filhos; //arq de 0000 até 9999
 }TABM;
 
 char *TABM_cria(int t, int * cont);
-void TABM_insere(TJ jogador, int t, char ** raiz, int * cont);
+char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont);
 void le_dados(char * arquivo, char ** raiz, int t);
 void printa_arqb(char * entrada);
+void TABM_libera_no(TABM * no);
+TABM *TABM_cria_no(int t);
 
 
 // char data[] = "11 January 1996 (aged 28)";
