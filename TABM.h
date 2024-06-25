@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define MAX_T 50
+
 typedef struct jogador{
     int id;
     int num_camisa;
@@ -30,15 +32,15 @@ char** filhos; //arq de 0000 até 9999
 typedef struct arvbm{
     int folha; //4 0-3
     int nchaves; //4 4-7
-    char* prox; //sizeof(char)*5 8-12
-    TJ * chaves; // 
-    char** filhos; //arq de 0000 até 9999
+    char prox[30]; //sizeof(char)*5 8-12
+    TJ chaves[(2*MAX_T)-1]; // 
+    char filhos[2*MAX_T][30]; //arq de 0000 até 9999
 }TABM;
 
 char *TABM_cria(int t, int * cont);
 char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont);
 void le_dados(char * arquivo, char ** raiz, int t);
-void printa_arqb(char * entrada);
+void printa_arqb(char * entrada, int t);
 void TABM_libera_no(TABM * no);
 TABM *TABM_cria_no(int t);
 

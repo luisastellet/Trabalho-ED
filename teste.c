@@ -9,44 +9,57 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void TABM_libera_no(TABM * no){
     int i;
-    for(i=0; i<=no->nchaves; i++) free(no->filhos[i]);
-    free(no->filhos);
-    free(no->chaves);
-    free(no->prox);
+    //for(i=0; i<=no->nchaves; i++) free(no->filhos[i]);
+    //free(no->filhos);
+    //free(no->chaves);
+    //free(no->prox);
     free(no);
 }
 
+void copia (TABM * T, TABM * aux, int t){
+    aux->nchaves = T->nchaves;
+    aux->folha = T->folha;
+    strcpy(aux->prox,T->prox);
+
+    int i;
+    for (int i=0; i<T->nchaves; i++){
+        aux->chaves[i].id = T->chaves[i].id;
+        aux->chaves[i].num_camisa = T->chaves[i].num_camisa;
+        strcpy(aux->chaves[i].posicao, T->chaves[i].posicao);
+        strcpy(aux->chaves[i].nome,T->chaves[i].nome);
+        aux->chaves[i].dia = T->chaves[i].dia;
+        strcpy(aux->chaves[i].mes,T->chaves[i].mes);
+        aux->chaves[i].ano = T->chaves[i].ano;
+        aux->chaves[i].idade = T->chaves[i].idade;
+        aux->chaves[i].part_sel = T->chaves[i].part_sel;
+        aux->chaves[i].gol_sel = T->chaves[i].gol_sel;
+        strcpy(aux->chaves[i].pais_time,T->chaves[i].pais_time);
+        strcpy(aux->chaves[i].time,T->chaves[i].time);
+        aux->chaves[i].capitao = T->chaves[i].capitao;
+    }
+
+    //aux->filhos = (char**)malloc(sizeof(char*)*t*2);
+    //for(i = 0; i<= T->nchaves;i++) aux->filhos[i] = malloc(sizeof(char)*31);
+    
+    for(i = 0; i<= 2 * t;i++){
+        strcpy(aux->filhos[i],T->filhos[i]);
+    }
+
+    return;
+}
 
 
 TABM *TABM_cria_no(int t){
     TABM* novo = (TABM*)malloc(sizeof(TABM));
     novo->nchaves = 0;
     novo->folha = 1;
-    novo->prox = (char*)malloc(sizeof(char)*30);
-    novo->chaves = (TJ*)malloc(sizeof(TJ)*((t*2)-1));
-    novo->filhos=(char**)malloc(sizeof(char*)*t*2);
-    for(int i = 0; i < (t*2); i++) novo->filhos[i] = malloc(sizeof(char)*30);
+    strcpy(novo->prox, "Prox");
+    //novo->chaves = (TJ*)malloc(sizeof(TJ)*((t*2)-1));
+    //novo->filhos=(char**)malloc(sizeof(char*)*t*2);
+    //for(int i = 0; i < (t*2); i++) novo->filhos[i] = malloc(sizeof(char)*30);
     return novo;
 }
 
-// TABM * TABM_preenche(TJ * jogador, int t, TABM * T){
-//     T->nchaves = 1;
-//     T->chaves[0].id = jogador->id;
-//     T->chaves[0].num_camisa = jogador->num_camisa;
-//     strcpy(T->chaves[0].posicao, jogador->posicao);
-//     strcpy(T->chaves[0].nome, jogador->nome);
-//     T->chaves[0].dia = jogador->dia;
-//     strcpy(T->chaves[0].mes, jogador->mes);
-//     T->chaves[0].ano = jogador->ano;
-//     T->chaves[0].idade = jogador->idade;
-//     T->chaves[0].part_sel = jogador->part_sel;
-//     T->chaves[0].gol_sel = jogador->gol_sel;
-//     strcpy(T->chaves[0].pais_time, jogador->pais_time);
-//     strcpy(T->chaves[0].time, jogador->time);
-//     T->chaves[0].capitao = jogador->capitao;
-
-//     return T;
-// }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -136,9 +149,11 @@ char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont){
         T->chaves[0] = *jogador;
         T->nchaves = 1;
         rewind(fraiz);
-        fwrite(T, sizeof(TABM), 1, fraiz);
-        //printa_arqb(*raiz);
+        TABM aux;
+        copia(T,&aux,t);
+        fwrite(&aux, sizeof(TABM), 1, fraiz);
         TABM_libera_no(T);
+        printa_arqb(*raiz,t);
         fclose(fraiz);
         return *raiz;
     }
@@ -146,7 +161,6 @@ char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont){
 
     fp = fopen(*raiz, "rb+");
     if(!fp) exit (1);
-    printa_arqb(*raiz);
     TABM *T = TABM_cria_no(t);
     rewind(fp);
     fread(T,sizeof(TABM),1,fp);
@@ -163,10 +177,13 @@ char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont){
         strcpy(S->filhos[0],(*raiz));
         S = divisao(S,1,T,t, cont);
         S = insere_nao_completo(S, jogador, t, cont);
-        fwrite(S, sizeof(TABM),1,fs);
-        fwrite(T,sizeof(TABM),1,fp);
-        printa_arqb(*raiz);
-        printa_arqb(S_arq);
+        TABM aux;
+        copia(S,&aux,t);
+        fwrite(&aux, sizeof(TABM),1,fs); //Escreve S
+        copia(T,&aux,t);
+        fwrite(&aux,sizeof(TABM),1,fp);// Escreve T
+        printa_arqb(*raiz,t);
+        printa_arqb(S_arq,t);
         TABM_libera_no(T);
         TABM_libera_no(S);
         fclose(fp);
@@ -175,10 +192,13 @@ char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont){
     }
 
     T = insere_nao_completo(T, jogador, t,cont);
-    fwrite(T,sizeof(TABM),1,fp);
+    TABM aux;
+    copia(T,&aux,t);
+    rewind(fp);
+    fwrite(&aux,sizeof(TABM),1,fp);
     fclose(fp);
     TABM_libera_no(T);
-    printa_arqb(*raiz); 
+    printa_arqb(*raiz,t); 
     return *raiz;
 }
 
@@ -195,13 +215,12 @@ char * TABM_cria(int t, int *cont){
     TJ jogador;
     novo.folha = 1;
     novo.nchaves = 0;
-    novo.prox = (char*)malloc(sizeof(char)*30);
-    char tmp[30];
-    strcpy(novo.prox, "Prox");
-    novo.chaves = (TJ*)malloc(sizeof(TJ)*((t*2)-1));
+    novo.prox;
+    strcpy(novo.prox, "Arquivos/Prox");
+    //novo.chaves = (TJ*)malloc(sizeof(TJ)*((t*2)-1));
     for(int i = 0; i < (t*2)-1; i++) strcpy(novo.chaves[i].nome,"Chave");
-    novo.filhos=(char**)malloc(sizeof(char*)*t*2);
-    for(int i = 0; i < (t*2); i++) novo.filhos[i] = malloc(sizeof(char)*30);
+    //novo.filhos=(char**)malloc(sizeof(char*)*t*2);
+    //for(int i = 0; i < (t*2); i++) novo.filhos[i] = malloc(sizeof(char)*30);
     for(int i = 0; i < (t*2); i++) strcpy(novo.filhos[i],"Filh");
     fwrite(&novo, sizeof(TABM), 1, fp);
     fclose(fp);
@@ -212,18 +231,18 @@ char * TABM_cria(int t, int *cont){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //          PRINTAR CONTEÚDO DO ARQUIVO BINÁRIO
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void printa_arqb(char* entrada){
+void printa_arqb(char* entrada, int t){
     FILE* fp = fopen(entrada, "rb");
     TABM novo;
     fread(&novo, sizeof(TABM),1,fp);
     printf("Folha: %d\n", novo.folha);
     printf("N Chaves: %d\n", novo.nchaves);
     printf("Proximo: %s\n", novo.prox);
-    for (int i = 0; i < 3; i++) printf("%d/%d/%s/%s/%d %s %d (aged %d)/%d/%d/%s/%s\n", 
+    for (int i = 0; i < (2*t)-1; i++) printf("%d/%d/%s/%s/%d %s %d (aged %d)/%d/%d/%s/%s\n", 
             novo.chaves[i].id, novo.chaves[i].num_camisa, novo.chaves[i].posicao, novo.chaves[i].nome, 
             novo.chaves[i].dia, novo.chaves[i].mes, novo.chaves[i].ano, novo.chaves[i].idade, novo.chaves[i].part_sel, 
             novo.chaves[i].gol_sel, novo.chaves[i].pais_time, novo.chaves[i].time);
-    for (int i = 0; i < 4; i++) printf("%s\n",novo.filhos[i]);
+    for (int i = 0; i < 2*t; i++) printf("%s\n",novo.filhos[i]);
     fclose(fp);
     return;
 }
@@ -236,17 +255,24 @@ void le_dados(char * arquivo, char ** raiz, int t){
     FILE * fp = fopen(arquivo, "r");
     if(!fp) exit(1);
     TJ *jogador = (TJ*)malloc(sizeof(TJ));
-    //int contar = 1;
+    int contar = 5;
     char tmp[30];
     while(fscanf(fp, "%s", tmp) == 1){ //lendo por seleção
-        while((fscanf(fp, "%d/%d/%4[^/]/%30[^/]/%d %10s %d (aged %d)/%d/%d/%20[^/]/%30[^\n]", &jogador->id, &jogador->num_camisa, jogador->posicao, jogador->nome, &jogador->dia, jogador->mes, &jogador->ano, &jogador->idade, &jogador->part_sel, &jogador->gol_sel, jogador->pais_time, jogador->time) == 12)){ //lendo por jogador
-            
+        while((contar && fscanf(fp, "%d/%d/%4[^/]/%30[^/]/%d %10s %d (aged %d)/%d/%d/%20[^/]/%30[^\n]", &jogador->id, &jogador->num_camisa, jogador->posicao, jogador->nome, &jogador->dia, jogador->mes, &jogador->ano, &jogador->idade, &jogador->part_sel, &jogador->gol_sel, jogador->pais_time, jogador->time) == 12)){ //lendo por jogador
+            //trata string
+            // int tam = strlen(jogador->nome);
+            // if(tam != 30){
+            //     for(int i =tam ; i< 30; i++){
+            //         jogador->nome[i] = ' ';
+            //     }
+            //     jogador->nome[30] = '\0';
+            // }
             if(strstr(jogador->nome, "(captain)")) jogador->capitao = 1;
             else jogador->capitao = 0;
             //printf("%d %s %d %d %s\n", jogador->dia, jogador->mes, jogador->ano, jogador->idade, jogador->time);
             //a struct jogador já está com as informações
             strcpy((*raiz),TABM_insere(jogador, t, raiz, &cont));
-            //contar--;
+            contar--;
         }
     }
     fclose(fp);
