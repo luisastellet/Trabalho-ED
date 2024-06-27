@@ -5,11 +5,6 @@
 //          LIBERA NÓ NA MEMÓRIA PRINCIPAL
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void TABM_libera_no(TABM * no){
-    int i;
-    //for(i=0; i<=no->nchaves; i++) free(no->filhos[i]);
-    //free(no->filhos);
-    //free(no->chaves);
-    //free(no->prox);
     free(no);
 }
 
@@ -34,17 +29,11 @@ void copia (TABM * T, TABM * aux, int t){
         strcpy(aux->chaves[i].time,T->chaves[i].time);
         aux->chaves[i].capitao = T->chaves[i].capitao;
     }
-
-    //aux->filhos = (char**)malloc(sizeof(char*)*t*2);
-    //for(i = 0; i<= T->nchaves;i++) aux->filhos[i] = malloc(sizeof(char)*31);
-    
     for(i = 0; i<= 2 * t;i++){
         strcpy(aux->filhos[i],T->filhos[i]);
     }
-
     return;
 }
-
 
 TABM *TABM_cria_no(int t){
     TABM* novo = (TABM*)malloc(sizeof(TABM));
@@ -215,7 +204,6 @@ char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont){
     return *raiz;
 }
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //          CRIA O ARQUIVO "VAZIO"
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -270,7 +258,7 @@ void le_dados(char * arquivo, char ** raiz, int t){
     FILE * fp = fopen(arquivo, "r");
     if(!fp) exit(1);
     TJ *jogador = (TJ*)malloc(sizeof(TJ));
-    int contar = 9;
+    int contar = 284;
     char tmp[30];
     while(fscanf(fp, "%s", tmp) == 1){ //lendo por seleção
         while((contar && fscanf(fp, "%d/%d/%4[^/]/%30[^/]/%d %10s %d (aged %d)/%d/%d/%20[^/]/%30[^\n]", &jogador->id, &jogador->num_camisa, jogador->posicao, jogador->nome, &jogador->dia, jogador->mes, &jogador->ano, &jogador->idade, &jogador->part_sel, &jogador->gol_sel, jogador->pais_time, jogador->time) == 12)){ //lendo por jogador
@@ -292,6 +280,28 @@ void le_dados(char * arquivo, char ** raiz, int t){
     return;
 }
 
+void imp(char* raiz,int andar, int t){
+    FILE* fp = fopen(raiz,"rb");
+    if(fp){
+        TABM* a = TABM_cria_no(t);
+        fread(a,sizeof(TABM),1,fp);
+        int i,j;
+        for(i = 0; i < a->nchaves; i++){
+            imp(a->filhos[i],andar+1,t);
+            for(j = 0; j<= andar; j++) printf("\t");
+            printf("%d\n", a->chaves[i].id);
+        }
+        imp(a->filhos[i],andar+1,t);
+        fclose(fp);
+    }
+    return;
+}
+
+
+void TABM_imprime(char** raiz,int t){
+    imp(*raiz,0,t);
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //          MAIN
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -301,19 +311,7 @@ int main(void){
     printf("Insira o valor de t para a construcao da arvore: ");
     scanf("%d", &t);
     le_dados("EURO.txt", &raiz, t);
-     printa_arqb("Arquivos/0001.bin",t);
-     printa_arqb("Arquivos/0002.bin",t);
-     printa_arqb("Arquivos/0003.bin",t);
-     printa_arqb("Arquivos/0004.bin",t);
-     printa_arqb("Arquivos/0005.bin",t);
-     printa_arqb("Arquivos/0006.bin",t);
-     printa_arqb("Arquivos/0007.bin",t);
-     printa_arqb("Arquivos/0008.bin",t);
+    TABM_imprime(&raiz,t);
     return 0;
 }
 
-
-/*
-dentro da insere, tenta abrir o arquivo "raiz", se não existir, cria ele, 
-senão lê para fazer as inserções
-*/
