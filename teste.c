@@ -1,7 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "TABM.h"
+
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -60,8 +58,6 @@ TABM *TABM_cria_no(int t){
     return novo;
 }
 
-
-
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //          FUNÇÃO DE DIVIDIR
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,7 +78,7 @@ TABM *divisao(TABM *S, int i, TABM* T, int t, int * cont){
     else {
     z->nchaves = t; //z possuirá uma chave a mais que T se for folha
     for(j=0;j < t;j++) z->chaves[j] = T->chaves[j+t-1];//Caso em que T é folha, temos q passar a info para o nó da direita
-    strcpy(z->prox,T->prox); 
+    strcpy(z->prox,T->prox);
     strcpy(T->prox, z_arq);
     }
     T->nchaves = t-1;
@@ -91,6 +87,11 @@ TABM *divisao(TABM *S, int i, TABM* T, int t, int * cont){
     for(j=S->nchaves; j>=i; j--) S->chaves[j] = S->chaves[j-1];
     S->chaves[i-1] = T->chaves[t-1];
     S->nchaves++;
+    FILE* fz = fopen(z_arq,"wb+");
+    TABM aux;
+    copia(z,&aux,t);
+    fwrite(&aux,sizeof(TABM),1,fz);
+    fclose(fz);
     return S;
 }
 
@@ -112,23 +113,33 @@ TABM *insere_nao_completo(TABM *S, TJ * jogador, int t, int * cont){
     while((i>=0) && (jogador->id < S->chaves[i].id)) i--;
     i++;
 
-    FILE* fp = fopen(S->filhos[i],"rb");
+    FILE* fp = fopen(S->filhos[i],"rb+");
     TABM* S_filho = TABM_cria_no(t);
     fread(S_filho,sizeof(TABM),1,fp);
-
-    if(S_filho->nchaves == ((2*t)-1)){
-        S = divisao(S, (i+1), S_filho, t, cont);
-        if(jogador->id > S->chaves[i].id) i++;
-        fwrite(S,sizeof(TABM),1,fp);
-        
-    }
     fclose(fp);
 
-    fp = fopen(S->filhos[i],"rb");
+    if(S_filho->nchaves == ((2*t)-1)){
+        fp = fopen(S->filhos[i],"wb");
+        S = divisao(S, (i+1), S_filho, t, cont);
+        if(jogador->id > S->chaves[i].id) i++;
+        TABM aux;
+        copia(S_filho,&aux,t);
+        fwrite(&aux,sizeof(TABM),1,fp);
+        fclose(fp);
+    }
+    
+
+    fp = fopen(S->filhos[i],"rb+");  //ACHEI UM DOS PROBLEMAS, ESTÁ AQUI!!! NÃO LÊ O ARQUIVO DIREITO!
     S_filho = TABM_cria_no(t);
     fread(S_filho,sizeof(TABM),1,fp);
+    fclose(fp);
+    
     S_filho = insere_nao_completo(S_filho, jogador, t, cont);
-    fwrite(S_filho,sizeof(TABM),1,fp);
+
+    TABM aux;
+    copia(S_filho,&aux,t);
+    fp = fopen(S->filhos[i],"wb");
+    fwrite(&aux,sizeof(TABM),1,fp);
     fclose(fp);
     TABM_libera_no(S_filho);
     return S;
@@ -153,25 +164,24 @@ char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont){
         copia(T,&aux,t);
         fwrite(&aux, sizeof(TABM), 1, fraiz);
         TABM_libera_no(T);
-        printa_arqb(*raiz,t);
+        //printa_arqb(*raiz,t);
         fclose(fraiz);
         return *raiz;
     }
-    fclose(fp);
-
-    fp = fopen(*raiz, "rb+");
-    if(!fp) exit (1);
+    
+    //if(!fp) exit (1);
     TABM *T = TABM_cria_no(t);
-    rewind(fp);
     fread(T,sizeof(TABM),1,fp);
+    fclose(fp);
 
     if(T->nchaves == (2*t)-1){ //tá lotado
         char * S_arq = (char*)malloc(sizeof(char)*30);
         strcpy(S_arq, TABM_cria(t, cont));
-        FILE *fs = fopen(S_arq, "rb");
+        FILE *fs = fopen(S_arq, "rb+");
         if(!fs) exit(1);
         TABM* S = (TABM*)malloc(sizeof(TABM));
         fread(S, sizeof(TABM),1,fs);
+        fclose(fs);
         S->nchaves = 0;
         S->folha = 0;
         strcpy(S->filhos[0],(*raiz));
@@ -179,26 +189,30 @@ char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont){
         S = insere_nao_completo(S, jogador, t, cont);
         TABM aux;
         copia(S,&aux,t);
+        fs = fopen(S_arq,"wb");
         fwrite(&aux, sizeof(TABM),1,fs); //Escreve S
+        fclose(fs);
+
+        
+        fp = fopen(*raiz,"wb");
         copia(T,&aux,t);
         fwrite(&aux,sizeof(TABM),1,fp);// Escreve T
-        printa_arqb(*raiz,t);
-        printa_arqb(S_arq,t);
+        //printa_arqb(*raiz,t);
+        //printa_arqb(S_arq,t);
         TABM_libera_no(T);
         TABM_libera_no(S);
         fclose(fp);
-        fclose(fs);
         return S_arq;
     }
 
     T = insere_nao_completo(T, jogador, t,cont);
     TABM aux;
     copia(T,&aux,t);
-    rewind(fp);
+    fp = fopen(*raiz, "wb");
     fwrite(&aux,sizeof(TABM),1,fp);
     fclose(fp);
     TABM_libera_no(T);
-    printa_arqb(*raiz,t); 
+    //printa_arqb(*raiz,t); 
     return *raiz;
 }
 
@@ -235,14 +249,16 @@ void printa_arqb(char* entrada, int t){
     FILE* fp = fopen(entrada, "rb");
     TABM novo;
     fread(&novo, sizeof(TABM),1,fp);
+    printf("%s",entrada);
     printf("Folha: %d\n", novo.folha);
     printf("N Chaves: %d\n", novo.nchaves);
     printf("Proximo: %s\n", novo.prox);
-    for (int i = 0; i < (2*t)-1; i++) printf("%d/%d/%s/%s/%d %s %d (aged %d)/%d/%d/%s/%s\n", 
+    for (int i = 0; i < novo.nchaves; i++) printf("%d/%d/%s/%s/%d %s %d (aged %d)/%d/%d/%s/%s\n", 
             novo.chaves[i].id, novo.chaves[i].num_camisa, novo.chaves[i].posicao, novo.chaves[i].nome, 
             novo.chaves[i].dia, novo.chaves[i].mes, novo.chaves[i].ano, novo.chaves[i].idade, novo.chaves[i].part_sel, 
             novo.chaves[i].gol_sel, novo.chaves[i].pais_time, novo.chaves[i].time);
     for (int i = 0; i < 2*t; i++) printf("%s\n",novo.filhos[i]);
+    printf("\n\n\n");
     fclose(fp);
     return;
 }
@@ -255,7 +271,7 @@ void le_dados(char * arquivo, char ** raiz, int t){
     FILE * fp = fopen(arquivo, "r");
     if(!fp) exit(1);
     TJ *jogador = (TJ*)malloc(sizeof(TJ));
-    int contar = 5;
+    int contar = 9;
     char tmp[30];
     while(fscanf(fp, "%s", tmp) == 1){ //lendo por seleção
         while((contar && fscanf(fp, "%d/%d/%4[^/]/%30[^/]/%d %10s %d (aged %d)/%d/%d/%20[^/]/%30[^\n]", &jogador->id, &jogador->num_camisa, jogador->posicao, jogador->nome, &jogador->dia, jogador->mes, &jogador->ano, &jogador->idade, &jogador->part_sel, &jogador->gol_sel, jogador->pais_time, jogador->time) == 12)){ //lendo por jogador
@@ -269,8 +285,6 @@ void le_dados(char * arquivo, char ** raiz, int t){
             // }
             if(strstr(jogador->nome, "(captain)")) jogador->capitao = 1;
             else jogador->capitao = 0;
-            //printf("%d %s %d %d %s\n", jogador->dia, jogador->mes, jogador->ano, jogador->idade, jogador->time);
-            //a struct jogador já está com as informações
             strcpy((*raiz),TABM_insere(jogador, t, raiz, &cont));
             contar--;
         }
@@ -284,11 +298,18 @@ void le_dados(char * arquivo, char ** raiz, int t){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(void){
     int t;
-    char * raiz = (char*)malloc(sizeof(char)*30);
-    char filename[30];
+    char * raiz = (char*)malloc(sizeof(char)*100);
     printf("Insira o valor de t para a construcao da arvore: ");
     scanf("%d", &t);
     le_dados("EURO.txt", &raiz, t);
+     printa_arqb("Arquivos/0001.bin",t);
+     printa_arqb("Arquivos/0002.bin",t);
+     printa_arqb("Arquivos/0003.bin",t);
+     printa_arqb("Arquivos/0004.bin",t);
+     printa_arqb("Arquivos/0005.bin",t);
+     printa_arqb("Arquivos/0006.bin",t);
+     printa_arqb("Arquivos/0007.bin",t);
+     printa_arqb("Arquivos/0008.bin",t);
     return 0;
 }
 
