@@ -23,6 +23,7 @@ void imp(char* raiz,int andar, int t){
             printf("%d\n", a->chaves[i].id);
         }
         imp(a->filhos[i],andar+1,t);
+        TABM_libera_no(a);
         fclose(fp);
     }
     return;
@@ -81,8 +82,8 @@ TABM *TABM_cria_no(int t){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TABM *divisao(TABM *S, int i, TABM* T, int t, int * cont){
     TABM *z = TABM_cria_no(t);
-    char z_arq[30];
-    strcpy(z_arq,TABM_cria(t, cont));
+    char *z_arq = (char*)malloc(sizeof(char)*30);
+    TABM_cria(t, cont,&z_arq);
     z->folha = T->folha;
     int j;
     if(!T->folha){
@@ -110,6 +111,8 @@ TABM *divisao(TABM *S, int i, TABM* T, int t, int * cont){
     copia(z,&aux,t);
     fwrite(&aux,sizeof(TABM),1,fz);
     fclose(fz);
+    free(z_arq);
+    TABM_libera_no(z);
     return S;
 }
 
@@ -134,6 +137,7 @@ TABM *insere_nao_completo(TABM *S, TJ * jogador, int t, int * cont){
     FILE* fp = fopen(S->filhos[i],"rb+");
     TABM* S_filho = TABM_cria_no(t);
     fread(S_filho,sizeof(TABM),1,fp);
+    TABM_libera_no(S_filho);
     fclose(fp);
 
     if(S_filho->nchaves == ((2*t)-1)){
@@ -170,7 +174,7 @@ char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont){
     FILE * fp = fopen(*raiz, "rb+");
     //se não tem arvore ainda
     if(!fp){
-        strcpy(*raiz, TABM_cria(t, cont));// Esse cara é o nosso "retorno", visto que temos uma variável raiz para controlar qual o nó do topo
+        TABM_cria(t, cont,raiz);// Esse cara é o nosso "retorno", visto que temos uma variável raiz para controlar qual o nó do topo
         FILE * fraiz = fopen(*raiz, "rb+");
         if(!fraiz) exit(1);
         TABM *T = TABM_cria_no(t);
@@ -192,7 +196,7 @@ char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont){
 
     if(T->nchaves == (2*t)-1){ //tá lotado
         char * S_arq = (char*)malloc(sizeof(char)*30);
-        strcpy(S_arq, TABM_cria(t, cont));
+        TABM_cria(t, cont,&S_arq);
         FILE *fs = fopen(S_arq, "rb+");
         if(!fs) exit(1);
         TABM* S = (TABM*)malloc(sizeof(TABM));
@@ -216,7 +220,9 @@ char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont){
 
         TABM_libera_no(T);
         TABM_libera_no(S);
-        return S_arq;
+        strcpy(*raiz,S_arq);
+        free(S_arq);
+        return *raiz;
     }
 
     T = insere_nao_completo(T, jogador, t,cont);
@@ -232,10 +238,9 @@ char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //          CRIA O ARQUIVO "VAZIO"
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-char * TABM_cria(int t, int *cont){
-    char * filename = (char*)malloc(sizeof(char)*30);
-    sprintf(filename, "Arquivos/%04d.bin", (*cont));
-    FILE * fp = fopen(filename, "wb");
+void TABM_cria(int t, int *cont, char** arq){
+    sprintf(*arq, "Arquivos/%04d.bin", (*cont));
+    FILE * fp = fopen(*arq, "wb");
     if(!fp) exit(1);
     TABM novo;
     TJ jogador;
@@ -248,7 +253,7 @@ char * TABM_cria(int t, int *cont){
     fwrite(&novo, sizeof(TABM), 1, fp);
     fclose(fp);
     (*cont)++;
-    return filename;
+    return;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -281,7 +286,7 @@ void le_dados(char * arquivo, char ** raiz, int t){
     FILE * fp = fopen(arquivo, "r");
     if(!fp) exit(1);
     TJ *jogador = (TJ*)malloc(sizeof(TJ));
-    int contar = 284;
+    int contar = 120;
     char tmp[30];
     while(fscanf(fp, "%s", tmp) == 1){ //lendo por seleção
         while(contar && (fscanf(fp, "%d/%d/%4[^/]/%30[^/]/%d %10s %d (aged %d)/%d/%d/%20[^/]/%30[^\n]", &jogador->id, &jogador->num_camisa, jogador->posicao, jogador->nome, &jogador->dia, jogador->mes, &jogador->ano, &jogador->idade, &jogador->part_sel, &jogador->gol_sel, jogador->pais_time, jogador->time) == 12)){ //lendo por jogador
@@ -292,6 +297,7 @@ void le_dados(char * arquivo, char ** raiz, int t){
         }
     }
     fclose(fp);
+    free(jogador);
     return;
 }
 
@@ -305,6 +311,7 @@ int main(void){
     scanf("%d", &t);
     le_dados("EURO.txt", &raiz, t);
     TABM_imprime(&raiz,t);
+    free(raiz);
     return 0;
 }
 
