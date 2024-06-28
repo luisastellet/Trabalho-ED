@@ -8,7 +8,37 @@ void TABM_libera_no(TABM * no){
     free(no);
 }
 
-void copia (TABM * T, TABM * aux, int t){
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          FUNÇÃO DE IMPRESSÃO AUXILIAR
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void imp(char* raiz,int andar, int t){
+    FILE* fp = fopen(raiz,"rb");
+    if(fp){
+        TABM * a = TABM_cria_no(t);
+        fread(a,sizeof(TABM),1,fp);
+        int i,j;
+        for(i = 0; i < a->nchaves; i++){
+            imp(a->filhos[i],andar+1,t);
+            for(j = 0; j<= andar; j++) printf("\t");
+            printf("%d\n", a->chaves[i].id);
+        }
+        imp(a->filhos[i],andar+1,t);
+        fclose(fp);
+    }
+    return;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          FUNÇÃO DE IMPRIMIR A ÁRVORE PELOS IDS
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void TABM_imprime(char** raiz,int t){
+    imp(*raiz,0,t);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          FUNÇÃO DE COPIAR STRUCTS
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void copia(TABM * T, TABM * aux, int t){
     aux->nchaves = T->nchaves;
     aux->folha = T->folha;
     strcpy(aux->prox,T->prox);
@@ -35,14 +65,14 @@ void copia (TABM * T, TABM * aux, int t){
     return;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          FUNÇÃO DE CRIAR O NÓ NA MEMÓRIA PRINCIPAL
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 TABM *TABM_cria_no(int t){
     TABM* novo = (TABM*)malloc(sizeof(TABM));
     novo->nchaves = 0;
     novo->folha = 1;
     strcpy(novo->prox, "Prox");
-    //novo->chaves = (TJ*)malloc(sizeof(TJ)*((t*2)-1));
-    //novo->filhos=(char**)malloc(sizeof(char*)*t*2);
-    //for(int i = 0; i < (t*2); i++) novo->filhos[i] = malloc(sizeof(char)*30);
     return novo;
 }
 
@@ -56,18 +86,18 @@ TABM *divisao(TABM *S, int i, TABM* T, int t, int * cont){
     z->folha = T->folha;
     int j;
     if(!T->folha){
-    z->nchaves = t-1;
-    for(j=0;j<t-1;j++) z->chaves[j] = T->chaves[j+t];
-    for(j=0;j<t;j++){
-        strcpy(z->filhos[j],T->filhos[j+t]);
-        strcpy(T->filhos[j+t],"NULL");
-    }
+        z->nchaves = t-1;
+        for(j=0;j<t-1;j++) z->chaves[j] = T->chaves[j+t];
+        for(j=0;j<t;j++){
+            strcpy(z->filhos[j],T->filhos[j+t]);
+            strcpy(T->filhos[j+t],"NULL");
+        }
     }
     else {
-    z->nchaves = t; //z possuirá uma chave a mais que T se for folha
-    for(j=0;j < t;j++) z->chaves[j] = T->chaves[j+t-1];//Caso em que T é folha, temos q passar a info para o nó da direita
-    strcpy(z->prox,T->prox);
-    strcpy(T->prox, z_arq);
+        z->nchaves = t; //z possuirá uma chave a mais que T se for folha
+        for(j=0;j < t;j++) z->chaves[j] = T->chaves[j+t-1];//Caso em que T é folha, temos q passar a info para o nó da direita
+        strcpy(z->prox,T->prox);
+        strcpy(T->prox, z_arq);
     }
     T->nchaves = t-1;
     for(j=S->nchaves; j>=i; j--) strcpy(S->filhos[j+1],S->filhos[j]);
@@ -117,7 +147,7 @@ TABM *insere_nao_completo(TABM *S, TJ * jogador, int t, int * cont){
     }
     
 
-    fp = fopen(S->filhos[i],"rb+");  //ACHEI UM DOS PROBLEMAS, ESTÁ AQUI!!! NÃO LÊ O ARQUIVO DIREITO!
+    fp = fopen(S->filhos[i],"rb+");  
     S_filho = TABM_cria_no(t);
     fread(S_filho,sizeof(TABM),1,fp);
     fclose(fp);
@@ -152,12 +182,10 @@ char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont){
         copia(T,&aux,t);
         fwrite(&aux, sizeof(TABM), 1, fraiz);
         TABM_libera_no(T);
-        //printa_arqb(*raiz,t);
         fclose(fraiz);
         return *raiz;
     }
     
-    //if(!fp) exit (1);
     TABM *T = TABM_cria_no(t);
     fread(T,sizeof(TABM),1,fp);
     fclose(fp);
@@ -174,6 +202,11 @@ char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont){
         S->folha = 0;
         strcpy(S->filhos[0],(*raiz));
         S = divisao(S,1,T,t, cont);
+        fp = fopen(*raiz, "wb");
+        TABM aux_3;
+        copia(T, &aux_3, t);
+        fwrite(&aux_3, sizeof(TABM), 1, fp);
+        fclose(fp);
         S = insere_nao_completo(S, jogador, t, cont);
         TABM aux;
         copia(S,&aux,t);
@@ -181,15 +214,8 @@ char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont){
         fwrite(&aux, sizeof(TABM),1,fs); //Escreve S
         fclose(fs);
 
-        
-        fp = fopen(*raiz,"wb");
-        copia(T,&aux,t);
-        fwrite(&aux,sizeof(TABM),1,fp);// Escreve T
-        //printa_arqb(*raiz,t);
-        //printa_arqb(S_arq,t);
         TABM_libera_no(T);
         TABM_libera_no(S);
-        fclose(fp);
         return S_arq;
     }
 
@@ -200,7 +226,6 @@ char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont){
     fwrite(&aux,sizeof(TABM),1,fp);
     fclose(fp);
     TABM_libera_no(T);
-    //printa_arqb(*raiz,t); 
     return *raiz;
 }
 
@@ -218,10 +243,7 @@ char * TABM_cria(int t, int *cont){
     novo.nchaves = 0;
     novo.prox;
     strcpy(novo.prox, "Arquivos/Prox");
-    //novo.chaves = (TJ*)malloc(sizeof(TJ)*((t*2)-1));
     for(int i = 0; i < (t*2)-1; i++) strcpy(novo.chaves[i].nome,"Chave");
-    //novo.filhos=(char**)malloc(sizeof(char*)*t*2);
-    //for(int i = 0; i < (t*2); i++) novo.filhos[i] = malloc(sizeof(char)*30);
     for(int i = 0; i < (t*2); i++) strcpy(novo.filhos[i],"Filh");
     fwrite(&novo, sizeof(TABM), 1, fp);
     fclose(fp);
@@ -250,6 +272,7 @@ void printa_arqb(char* entrada, int t){
     return;
 }
 
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //          LÊ DADOS PARA ARQUIVO
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -261,15 +284,7 @@ void le_dados(char * arquivo, char ** raiz, int t){
     int contar = 284;
     char tmp[30];
     while(fscanf(fp, "%s", tmp) == 1){ //lendo por seleção
-        while((contar && fscanf(fp, "%d/%d/%4[^/]/%30[^/]/%d %10s %d (aged %d)/%d/%d/%20[^/]/%30[^\n]", &jogador->id, &jogador->num_camisa, jogador->posicao, jogador->nome, &jogador->dia, jogador->mes, &jogador->ano, &jogador->idade, &jogador->part_sel, &jogador->gol_sel, jogador->pais_time, jogador->time) == 12)){ //lendo por jogador
-            //trata string
-            // int tam = strlen(jogador->nome);
-            // if(tam != 30){
-            //     for(int i =tam ; i< 30; i++){
-            //         jogador->nome[i] = ' ';
-            //     }
-            //     jogador->nome[30] = '\0';
-            // }
+        while(contar && (fscanf(fp, "%d/%d/%4[^/]/%30[^/]/%d %10s %d (aged %d)/%d/%d/%20[^/]/%30[^\n]", &jogador->id, &jogador->num_camisa, jogador->posicao, jogador->nome, &jogador->dia, jogador->mes, &jogador->ano, &jogador->idade, &jogador->part_sel, &jogador->gol_sel, jogador->pais_time, jogador->time) == 12)){ //lendo por jogador
             if(strstr(jogador->nome, "(captain)")) jogador->capitao = 1;
             else jogador->capitao = 0;
             strcpy((*raiz),TABM_insere(jogador, t, raiz, &cont));
@@ -278,28 +293,6 @@ void le_dados(char * arquivo, char ** raiz, int t){
     }
     fclose(fp);
     return;
-}
-
-void imp(char* raiz,int andar, int t){
-    FILE* fp = fopen(raiz,"rb");
-    if(fp){
-        TABM* a = TABM_cria_no(t);
-        fread(a,sizeof(TABM),1,fp);
-        int i,j;
-        for(i = 0; i < a->nchaves; i++){
-            imp(a->filhos[i],andar+1,t);
-            for(j = 0; j<= andar; j++) printf("\t");
-            printf("%d\n", a->chaves[i].id);
-        }
-        imp(a->filhos[i],andar+1,t);
-        fclose(fp);
-    }
-    return;
-}
-
-
-void TABM_imprime(char** raiz,int t){
-    imp(*raiz,0,t);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
