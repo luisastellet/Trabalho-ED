@@ -37,7 +37,7 @@ typedef struct arvbm{
     char filhos[2*MAX_T][30]; //arq de 0000 até 9999
 }TABM;
 
-void TABM_cria(int t, int * cont, char**raiz);
+void TABM_cria(int t, int * cont, char **arq);
 char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont);
 void le_dados(char * arquivo, char ** raiz, int t);
 void printa_arqb(char * entrada, int t);
