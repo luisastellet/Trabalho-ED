@@ -1,6 +1,27 @@
 #include "TABM.h"
+#include "Tabelas.c"
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          FUNÇÃO DE BUSCA
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+char* TABM_busca(char* arq, int id){
+    FILE* fp = fopen(arq,"rb");
+    if(!fp) exit(1);
+    TABM a;
+    fread(&a,sizeof(TABM),1,fp);
+    fclose(fp);
+    int i = 0;
+    while ((i < a.nchaves) && (id > a.chaves[i].id)) i++;
+    if ((i < a.nchaves) && (a.folha) && (id == a.chaves[i].id)) return arq;
+    if (a.folha) return "NULL";
+    if (a.chaves[i].id == id) i++;
+    return TABM_busca(a.filhos[i], id);
+}
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //          LIBERA NÓ NA MEMÓRIA PRINCIPAL
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -262,7 +283,7 @@ void printa_arqb(char* entrada, int t){
     FILE* fp = fopen(entrada, "rb");
     TABM novo;
     fread(&novo, sizeof(TABM),1,fp);
-    printf("%s",entrada);
+    printf("Arquivo atual: %s\n",entrada);
     printf("Folha: %d\n", novo.folha);
     printf("N Chaves: %d\n", novo.nchaves);
     printf("Proximo: %s\n", novo.prox);
@@ -300,16 +321,23 @@ void le_dados(char * arquivo, char ** raiz, int t){
     return;
 }
 
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //          MAIN
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(void){
-    int t;
+    int t, x;
     char * raiz = (char*)malloc(sizeof(char)*30);
+    mkdir("Arquivos", 0777);
+    mkdir("Tabelas", 0777);
     printf("Insira o valor de t para a construcao da arvore: ");
     scanf("%d", &t);
     le_dados("EURO.txt", &raiz, t);
     TABM_imprime(&raiz,t);
     free(raiz);
+    tabela_nacionalidade("EURO.txt");
+    printa_nacionalidades("Tabelas/Nacionalidades.bin");
+    tabela_posicoes("EURO.txt");
+    printa_posicoes("Tabelas/Posições.bin");
     return 0;
 }
