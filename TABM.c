@@ -334,10 +334,15 @@ int main(void){
     scanf("%d", &t);
     le_dados("EURO.txt", &raiz, t);
     TABM_imprime(&raiz,t);
+    printf("Qual jogador voce deseja?: ");
+    scanf("%d",&x);
+    char resp[20];
+    strcpy(resp,TABM_busca(raiz,x));
+    printa_arqb(resp,t);
     free(raiz);
-    tabela_nacionalidade("EURO.txt");
-    printa_nacionalidades("Tabelas/Nacionalidades.bin");
-    tabela_posicoes("EURO.txt");
-    printa_posicoes("Tabelas/Posições.bin");
+    // tabela_nacionalidade("EURO.txt");
+    // printa_nacionalidades("Tabelas/Nacionalidades.bin");
+    // tabela_posicoes("EURO.txt");
+    // printa_posicoes("Tabelas/Posições.bin");
     return 0;
 }

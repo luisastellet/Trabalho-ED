@@ -158,6 +158,7 @@ TARVBM* remover(TARVBM* arv, int ch, int t){
   if((i < arv->nchaves) && (ch == arv->chave[i])) i++;
   TARVBM *y = arv->filho[i], *z = NULL;
   if (y->nchaves == t-1){ //CASOS 3A e 3B
+
     if((i < arv->nchaves) && (arv->filho[i+1]->nchaves >=t)){ //CASO 3A
       printf("\nCASO 3A: i menor que nchaves\n");
       z = arv->filho[i+1];
@@ -181,6 +182,7 @@ TARVBM* remover(TARVBM* arv, int ch, int t){
       arv->filho[i] = remover(arv->filho[i], ch, t);
       return arv;
     }
+
     if((i > 0) && (!z) && (arv->filho[i-1]->nchaves >=t)){ //CASO 3A
       printf("\nCASO 3A: i igual a nchaves\n");
       z = arv->filho[i-1];
