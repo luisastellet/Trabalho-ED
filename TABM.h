@@ -39,7 +39,7 @@ typedef struct arvbm{
 
 void TABM_cria(int t, int * cont, char **arq);
 char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont);
-void le_dados(char * arquivo, char ** raiz, int t);
+void le_dados(char * arquivo, char ** raiz, int t, int * cont);
 void printa_arqb(char * entrada, int t);
 void TABM_libera_no(TABM * no);
 TABM *TABM_cria_no(int t);

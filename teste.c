@@ -271,9 +271,9 @@ char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont){
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //          FUNÇÃO PARA REMOVER CHAVES
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void TABM_remover(char* no, int ch, int t){
+char* TABM_remover(char* no, int ch, int t){
     FILE* fp = fopen(no,"rb+");
-    if(!fp) return;
+    if(!fp) return no;
     TABM arv;
     fread(&arv,sizeof(TABM),1,fp);
     fclose(fp);
@@ -284,7 +284,7 @@ void TABM_remover(char* no, int ch, int t){
     if((i < arv.nchaves) && (ch == arv.chaves[i].id) && (arv.folha)){ //Caso 1
         printf("\nCASO 1\n");
         int j;
-        for(j = i; j < arv.nchaves-1;j++) arv.chaves[j] = arv.chaves[j+1];
+        for(j = i; j < arv.nchaves-1;j++) arv.chaves[j] = copia_chaves(arv.chaves[j],arv.chaves[j+1]);
         arv.nchaves--;
         if(!arv.nchaves){
             remove(no);
@@ -294,116 +294,262 @@ void TABM_remover(char* no, int ch, int t){
             fwrite(&arv,sizeof(TABM),1,fp);
             fclose(fp);
         }
-        return;
+        return no;
     }
 
-    if((i < arv.nchaves) && (ch == arv.chaves[i].id)) i++;
+    if((i < arv.nchaves) && (ch == arv.chaves[i].id)) i++; //DAndo merda
     FILE* fy = fopen(arv.filhos[i],"rb"); 
     if(!fy) exit(1);
     TABM y,z; z.nchaves = 0; //Verificação para substituir o NULL;
-    fread(&y,sizeof(int),1,fy);
+    fread(&y,sizeof(TABM),1,fy);
     fclose(fy);
 
     if(y.nchaves == t-1){//Caso 3A e 3B
-        FILE* fz = fopen(arv.filhos[i+1],"rb");
-        TABM i_mais_1;
-        fread(&i_mais_1,sizeof(int),1,fz);
-        fclose(fz); 
-        if((i < arv.nchaves) && (i_mais_1.nchaves >= t)){ //Caso 3A direita
-            printf("\nCASO 3A: i menor que nchaves\n");
-            z = i_mais_1; //CHANCE DE MERDA
-            if(!y.folha){
-                y.chaves[t-1] = copia_chaves(y.chaves[t-1],arv.chaves[i]);
-                arv.chaves[i] = copia_chaves(arv.chaves[i],z.chaves[0]);
-            }
-            else{
-                //arv.chaves[i] = z.chaves[0] + 1; //QUE PORRA É ESSA
-                y.chaves[t-1] = copia_chaves(y.chaves[t-1],z.chaves[0]);
-            }
-            y.nchaves++;
-
-            int j;
-            for(j = 0; j < z.nchaves-1; j++) z.chaves[j] = copia_chaves(z.chaves[j],z.chaves[j+1]);
-            strcpy(y.filhos[y.nchaves],z.filhos[0]);
-            for(j = 0; j < z.nchaves; j++) strcpy(z.filhos[j],z.filhos[j+1]);
-            z.nchaves--;
-            
-            fp = fopen(no,"wb");
-            fwrite(&arv,sizeof(TABM),1,fp);
-            fclose(fp);
-
-            fy = fopen(arv.filhos[i],"wb");
-            fwrite(&y,sizeof(TABM),1,fy);
-            fclose(fy);
-
-            fz = fopen(arv.filhos[i+1],"wb");
-            fwrite(&z,sizeof(TABM),1,fz);
+        if(i < arv.nchaves){
+            FILE* fz = fopen(arv.filhos[i+1],"rb"); //Evitar segmentation fault
+            TABM i_mais_1;
+            fread(&i_mais_1,sizeof(TABM),1,fz);
             fclose(fz);
+            if((i < arv.nchaves) && (i_mais_1.nchaves >= t)){ //Caso 3A direita
+                printf("\nCASO 3A: i menor que nchaves\n");
+                copia(&i_mais_1,&z,t); //CHANCE DE MERDA
+                if(!y.folha){
+                    y.chaves[t-1] = copia_chaves(y.chaves[t-1],arv.chaves[i]);
+                    arv.chaves[i] = copia_chaves(arv.chaves[i],z.chaves[0]);
+                }
+                else{
+                    arv.chaves[i].id = z.chaves[0].id + 1;
+                    y.chaves[t-1] = copia_chaves(y.chaves[t-1],z.chaves[0]);
+                }
+                y.nchaves++;
 
-            TABM_remover(arv.filhos[i],ch,t);
-
-            FILE* f_aux = fopen(arv.filhos[i],"rb");
-            if(!f_aux){//Equivalente ao return NULL
-                strcpy(arv.filhos[i],"Filh"); 
+                int j;
+                for(j = 0; j < z.nchaves-1; j++) z.chaves[j] = copia_chaves(z.chaves[j],z.chaves[j+1]);
+                strcpy(y.filhos[y.nchaves],z.filhos[0]);
+                for(j = 0; j < z.nchaves; j++) strcpy(z.filhos[j],z.filhos[j+1]);
+                z.nchaves--;
+                
                 fp = fopen(no,"wb");
                 fwrite(&arv,sizeof(TABM),1,fp);
                 fclose(fp);
-            }
-            else fclose(f_aux);
 
-            return;
+                fy = fopen(arv.filhos[i],"wb");
+                fwrite(&y,sizeof(TABM),1,fy);
+                fclose(fy);
+
+                fz = fopen(arv.filhos[i+1],"wb");
+                fwrite(&z,sizeof(TABM),1,fz);
+                fclose(fz);
+
+                strcpy(arv.filhos[i],TABM_remover(arv.filhos[i],ch,t));
+
+                FILE* f_aux = fopen(arv.filhos[i],"rb");
+                if(!f_aux){//Equivalente ao return NULL
+                    strcpy(arv.filhos[i],"Filh"); 
+                    fp = fopen(no,"wb");
+                    fwrite(&arv,sizeof(TABM),1,fp);
+                    fclose(fp);
+                }
+                else fclose(f_aux);
+
+                return no;
+            }
         }
-
-        FILE* fz = fopen(arv.filhos[i-1],"rb");
-        TABM i_menos_1;
-        fread(&i_menos_1,sizeof(int),1,fz);
-        fclose(fz);
-
-        if((i > 0) && (z.nchaves == 0) && (i_menos_1.nchaves >= t)){//CASO 3A esquerda
-            printf("\nCASO 3A: i igual a nchaves\n");
-            z = i_menos_1; //CHANCE DE MERDA
-
-            int j;
-            for(j = y.nchaves; j > 0; j--) y.chaves[j] = copia_chaves(y.chaves[j],y.chaves[j-1]);
-            for(j = y.nchaves+1; j > 0; j--) strcpy(y.filhos[j],y.filhos[j-1]);
-
-            if(!y.folha){
-                y.chaves[0] = copia_chaves(y.chaves[0],arv.chaves[i-1]);
-                arv.chaves[i-1] = copia_chaves(arv.chaves[i-1],z.chaves[z.nchaves-1]);
-            }
-            else{
-                arv.chaves[i-1] = copia_chaves(arv.chaves[i-1],z.chaves[z.nchaves-1]);
-                y.chaves[0] = copia_chaves(y.chaves[0],z.chaves[z.nchaves-1]);
-            }
-            y.nchaves++;
-
-            strcpy(y.filhos[0],z.filhos[z.nchaves]);
-            z.nchaves--;
-            
-            fp = fopen(no,"wb");
-            fwrite(&arv,sizeof(TABM),1,fp);
-            fclose(fp);
-
-            fy = fopen(arv.filhos[i],"wb");
-            fwrite(&y,sizeof(TABM),1,fy);
-            fclose(fy);
-
-            fz = fopen(arv.filhos[i-1],"wb");
-            fwrite(&z,sizeof(TABM),1,fz);
+        if(i > 0){//Evitar segmentation fault
+            FILE* fz = fopen(arv.filhos[i-1],"rb");
+            TABM i_menos_1;
+            fread(&i_menos_1,sizeof(TABM),1,fz);
             fclose(fz);
+            if((i > 0) && (z.nchaves == 0) && (i_menos_1.nchaves >= t)){//CASO 3A esquerda
+                printf("\nCASO 3A: i igual a nchaves\n");
+                copia(&i_menos_1,&z,t); //z recebe i_menos_1
 
-            TABM_remover(arv.filhos[i],ch,t); //CHANCE DE MERDA, original: arv->filho[i] = remover(y, ch, t);
-            FILE* f_aux = fopen(arv.filhos[i],"rb");
-            if(!f_aux){//Equivalente ao return NULL
-                strcpy(arv.filhos[i],"Filh"); 
+                int j;
+                for(j = y.nchaves; j > 0; j--) y.chaves[j] = copia_chaves(y.chaves[j],y.chaves[j-1]);
+                for(j = y.nchaves+1; j > 0; j--) strcpy(y.filhos[j],y.filhos[j-1]);
+
+                if(!y.folha){
+                    y.chaves[0] = copia_chaves(y.chaves[0],arv.chaves[i-1]);
+                    arv.chaves[i-1] = copia_chaves(arv.chaves[i-1],z.chaves[z.nchaves-1]);
+                }
+                else{
+                    arv.chaves[i-1] = copia_chaves(arv.chaves[i-1],z.chaves[z.nchaves-1]);
+                    y.chaves[0] = copia_chaves(y.chaves[0],z.chaves[z.nchaves-1]);
+                }
+                y.nchaves++;
+
+                strcpy(y.filhos[0],z.filhos[z.nchaves]);
+                z.nchaves--;
+                
                 fp = fopen(no,"wb");
                 fwrite(&arv,sizeof(TABM),1,fp);
                 fclose(fp);
+
+                fy = fopen(arv.filhos[i],"wb");
+                fwrite(&y,sizeof(TABM),1,fy);
+                fclose(fy);
+
+                fz = fopen(arv.filhos[i-1],"wb");
+                fwrite(&z,sizeof(TABM),1,fz);
+                fclose(fz);
+
+                strcpy(arv.filhos[i],TABM_remover(arv.filhos[i],ch,t)); //CHANCE DE MERDA, original: arv->filho[i] = remover(y, ch, t);
+                FILE* f_aux = fopen(arv.filhos[i],"rb");
+                if(!f_aux){//Equivalente ao return NULL
+                    strcpy(arv.filhos[i],"Filh"); 
+                    fp = fopen(no,"wb");
+                    fwrite(&arv,sizeof(TABM),1,fp);
+                    fclose(fp);
+                }
+                else fclose(f_aux);
+                return no;
             }
-            else fclose(f_aux);
-            return;
+        } 
+        if(z.nchaves == 0){ //Caso 3B
+            if(i < arv.nchaves){
+                FILE* fz = fopen(arv.filhos[i+1],"rb"); //Evitar segmentation fault
+                TABM i_mais_1;
+                fread(&i_mais_1,sizeof(TABM),1,fz);
+                fclose(fz);
+                if(i < arv.nchaves && i_mais_1.nchaves == t-1){
+                    printf("\nCASO 3B: i menor que nchaves\n");
+                    copia(&i_mais_1,&z,t); // z = arv.filho[i+1]
+                    if(!y.folha){
+                        y.chaves[t-1] = copia_chaves(y.chaves[t-1],arv.chaves[i]);
+                        y.nchaves++;
+                    }
+                    int j = 0;
+                    while(j < t-1){
+                        if(!y.folha) y.chaves[t+j] = copia_chaves(y.chaves[t+j],z.chaves[j]);
+                        else y.chaves[t+j-1] = copia_chaves(y.chaves[t+j-1],z.chaves[j]);
+                        y.nchaves++;
+                        j++;
+                    }
+                    strcpy(y.prox,z.prox);
+                    if(!y.folha){
+                        for(j = 0; j < t; j++){
+                            strcpy(y.filhos[t+j],z.filhos[j]);
+                            strcpy(z.filhos[j],"Filh");
+                        }
+                    }
+                    remove(arv.filhos[i+1]); //libera(z)
+                    for(j=i; j < arv.nchaves-1; j++){
+                        arv.chaves[j] = copia_chaves(arv.chaves[j],arv.chaves[j+1]);
+                        strcpy(arv.filhos[j+1],arv.filhos[j+2]);
+                    }
+                    strcpy(arv.filhos[arv.nchaves],"Filh");
+                    arv.nchaves--;
+                    if(!arv.nchaves){ //ALTISSIMAS CHANCES DE MERDA
+                        remove(no);
+                        strcpy(no,arv.filhos[0]);
+                    }
+                    fp = fopen(no,"wb");
+                    fwrite(&arv,sizeof(TABM),1,fp);
+                    fclose(fp);
+
+                    fy = fopen(arv.filhos[i],"wb");
+                    fwrite(&y,sizeof(TABM),1,fy);
+                    fclose(fy);
+
+                    // if(strcmp(arv.filhos[i+1],"Filh") != 0){
+                    //     fz = fopen(arv.filhos[i+1],"wb");
+                    //     fwrite(&z,sizeof(TABM),1,fz);
+                    //     fclose(fz);
+                    // }
+
+                    strcpy(no,TABM_remover(no,ch,t));
+
+                    FILE* f_aux = fopen(arv.filhos[i],"rb");
+                    if(!f_aux){//Equivalente ao return NULL
+                        strcpy(arv.filhos[i],"Filh"); 
+                        fp = fopen(no,"wb");
+                        fwrite(&arv,sizeof(TABM),1,fp);
+                        fclose(fp);
+                    }
+                    else fclose(f_aux);
+                    return no;
+                }
+            }
+            if(i > 0 && z.nchaves == 0){
+                FILE* fz = fopen(arv.filhos[i-1],"rb"); //Evitar segmentation fault
+                TABM i_menos_1;
+                fread(&i_menos_1,sizeof(TABM),1,fz);
+                fclose(fz);
+                if((i > 0) && (i_menos_1.nchaves == t-1)){
+                    printf("\nCASO 3B: i igual a nchaves\n");
+                    copia(&i_menos_1,&z,t); //z = arv.filho[i-1]
+                    if(!y.folha){
+                        if(i == arv.nchaves){
+                            z.chaves[t-1] = copia_chaves(z.chaves[t-1],arv.chaves[i-1]);
+                        }else{
+                            z.chaves[t-1] = copia_chaves(z.chaves[t-1],arv.chaves[i]);
+                        }
+                        z.nchaves++;
+                    }
+                    int j = 0;
+                    while(j < t-1){
+                        if(!y.folha) z.chaves[t+j] = copia_chaves(z.chaves[t+j],y.chaves[j]);
+                        else z.chaves[t+j-1] = copia_chaves(z.chaves[t+j-1],y.chaves[j]);
+                        z.nchaves++;
+                        j++;
+                    }
+                    strcpy(z.prox,y.prox);
+                    if(!z.folha){
+                        for(j = 0; j < t; j++){
+                            strcpy(z.filhos[t+j],y.filhos[j]);
+                            strcpy(y.filhos[j],"Filh");
+                        }
+                    }
+                    remove(arv.filhos[i]);
+                    strcpy(arv.filhos[arv.nchaves],"Filh");
+                    arv.nchaves--;
+                    if(!arv.nchaves){//CHANCE ALTÌSSIMA DE MERDA
+                        remove(no);
+                        strcpy(no,arv.filhos[0]);
+                    }
+                    else{
+                        fp = fopen(no,"wb");
+                        fwrite(&arv,sizeof(TABM),1,fp);
+                        fclose(fp);
+
+                        // fy = fopen(arv.filhos[i],"wb");
+                        // fwrite(&y,sizeof(TABM),1,fy);
+                        // fclose(fy);
+
+                        if(strcmp(arv.filhos[i-1],"Filh") != 0){
+                            fz = fopen(arv.filhos[i-1],"wb");
+                            fwrite(&z,sizeof(TABM),1,fz);
+                            fclose(fz);
+                        
+
+                        i--;
+
+                        strcpy(arv.filhos[i],TABM_remover(arv.filhos[i],ch,t));
+                        FILE* f_aux = fopen(arv.filhos[i],"rb");
+                        if(!f_aux){//Equivalente ao return NULL
+                            strcpy(arv.filhos[i],"Filh"); 
+                            fp = fopen(no,"wb");
+                            fwrite(&arv,sizeof(TABM),1,fp);
+                            fclose(fp);
+                        }
+                        else fclose(f_aux);
+                        }
+                    }
+                    return no;
+                }   
+            }
         }
     }
+    strcpy(arv.filhos[i],TABM_remover(arv.filhos[i],ch,t));
+    FILE* f_aux = fopen(arv.filhos[i],"rb");
+    if(!f_aux){//Equivalente ao return NULL
+        strcpy(arv.filhos[i],"Filh"); 
+        fp = fopen(no,"wb");
+        fwrite(&arv,sizeof(TABM),1,fp);
+        fclose(fp);
+    }
+    else fclose(f_aux);
+    return no;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -452,18 +598,17 @@ void printa_arqb(char* entrada, int t){
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //          LÊ DADOS PARA ARQUIVO
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void le_dados(char * arquivo, char ** raiz, int t){
-    int cont = 1;
+void le_dados(char * arquivo, char ** raiz, int t, int* cont){
     FILE * fp = fopen(arquivo, "r");
     if(!fp) exit(1);
     TJ *jogador = (TJ*)malloc(sizeof(TJ));
-    int contar = 5;
+    int contar = 12;
     char tmp[30];
     while(fscanf(fp, "%s", tmp) == 1){ //lendo por seleção
         while(contar && (fscanf(fp, "%d/%d/%4[^/]/%30[^/]/%d %10s %d (aged %d)/%d/%d/%20[^/]/%30[^\n]", &jogador->id, &jogador->num_camisa, jogador->posicao, jogador->nome, &jogador->dia, jogador->mes, &jogador->ano, &jogador->idade, &jogador->part_sel, &jogador->gol_sel, jogador->pais_time, jogador->time) == 12)){ //lendo por jogador
             if(strstr(jogador->nome, "(captain)")) jogador->capitao = 1;
             else jogador->capitao = 0;
-            strcpy((*raiz),TABM_insere(jogador, t, raiz, &cont));
+            strcpy((*raiz),TABM_insere(jogador, t, raiz, cont));
             contar--;
         }
     }
@@ -478,19 +623,47 @@ void le_dados(char * arquivo, char ** raiz, int t){
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(void){
     int t, x;
+    int cont = 1;
     char * raiz = (char*)malloc(sizeof(char)*30);
     mkdir("Arquivos", 0777);
+    mkdir("Tabelas",0777);
     printf("Insira o valor de t para a construcao da arvore: ");
     scanf("%d", &t);
-    le_dados("EURO.txt", &raiz, t);
-    TABM_imprime(&raiz,t);
-    TABM_remover(raiz,1,t);
-    TABM_remover(raiz,216,t);
-    TABM_imprime(&raiz,t);
+    //le_dados("EURO.txt", &raiz, t, &cont);
+
+    int num = 0, from, to;
+    while(num != -1){
+        printf("Digite um numero para adicionar. 0 para imprimir. -9 para remover e -1 para sair\n");
+        scanf("%d", &num);
+        if(num == -9){
+            scanf("%d", &from);
+            strcpy(raiz, TABM_remover(raiz, from, t));
+            TABM_imprime(&raiz, t);
+            printf("\n\n");
+        }
+        else if(num == -1){
+            printf("\n");
+            TABM_imprime(&raiz,t);
+            printf("\n\n");
+        }
+        else if(!num){
+            printf("\n");
+            TABM_imprime(&raiz,t);
+            printf("\n\n");
+        }
+        else{
+            TJ* jogador = (TJ*)malloc(sizeof(TJ));
+            jogador->id = num;
+            strcpy(raiz, TABM_insere(jogador, t,&raiz ,&cont));
+            TABM_imprime(&raiz,t);
+            free(jogador);
+        }
+
+        printf("\n\n");
+    }
+
     free(raiz);
-    //tabela_nacionalidade("EURO.txt");
-    //printa_nacionalidades("Tabelas/Nacionalidades.bin");
-    // tabela_posicoes("EURO.txt");
-    // printa_posicoes("Tabelas/Posições.bin");
+
+    system("rm -fr Arquivos");
     return 0;
 }
