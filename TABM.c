@@ -613,7 +613,7 @@ void le_dados(char * arquivo, char ** raiz, int t, int* cont){
             if(strstr(jogador->nome, "(captain)")) jogador->capitao = 1;
             else jogador->capitao = 0;
             for(int i=0; i<strlen(jogador->nome); i++){
-                if(jogador->nome[i] == '(') jogador->nome[i] = '\0';
+                if(jogador->nome[i] == '(') jogador->nome[i-1] = '\0'; //tirando captain do nome
             }
             strcpy((*raiz),TABM_insere(jogador, t, raiz, cont));
             contar--;

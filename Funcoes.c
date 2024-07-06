@@ -318,6 +318,9 @@ void Q12_1(char* arv, int id, int novo_num){
     return;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (12.2) Alteração da posição do jogador
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Q12_2(char* arv, int id, char* pos){
     char resp[20];
     strcpy(resp,TABM_busca(arv,id));
@@ -347,6 +350,9 @@ void Q12_2(char* arv, int id, char* pos){
     return;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (12.3) Alteração da idade de um jogador
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Q12_3(char* arv, int id, int nova_idade){
     char resp[20];
     strcpy(resp,TABM_busca(arv,id));
@@ -374,6 +380,9 @@ void Q12_3(char* arv, int id, int nova_idade){
     return;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (12.4) Alteração da quantidade de partidas de um jogador
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Q12_4(char* arv, int id, int novas_partidas){
     char resp[20], sele_tmp[20], aux[20];
     strcpy(resp,TABM_busca(arv,id));
@@ -397,6 +406,9 @@ void Q12_4(char* arv, int id, int novas_partidas){
     return;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (12.5) Alteração do número de gols de um jogador
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Q12_5(char* arv, int id, int novos_gols){
     char resp[20], sele_tmp[20], aux[20];
     strcpy(resp,TABM_busca(arv,id));
@@ -420,6 +432,9 @@ void Q12_5(char* arv, int id, int novos_gols){
     return;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (12.6) Alteração do time de um jogador
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Q12_6(char* arv, int id, char * novo_time){
     char resp[20];
     strcpy(resp,TABM_busca(arv,id));
@@ -449,7 +464,9 @@ void Q12_6(char* arv, int id, char * novo_time){
     return;
 }
 
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (12.7) Alteração da opção capitão de um jogador
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void vira_capitao(char * arv, int id){
     char resp[20], sele_tmp[20], aux[20];
     int qtd, tmp, num, ver = 0;
@@ -464,7 +481,7 @@ void vira_capitao(char * arv, int id){
     for(i = 0; a.chaves[i].id != id; i++);
 
     if(a.chaves[i].capitao){
-        printf("\n\tPREZADO USUARIO: Este jogador ja eh capitao!");
+        printf("\n\n\tPREZADO USUARIO: O %s ja eh capitao!",a.chaves[i].nome);
         return;
     }
 
@@ -525,7 +542,7 @@ void deixa_capitao(char * arv, int id, int t){
     for(i = 0; a.chaves[i].id != id; i++);
     
     if(!a.chaves[i].capitao){
-        printf("\n\tPREZADO USUARIO: Este jogador nao eh capitao!");
+        printf("\n\n\tPREZADO USUARIO: O %s nao eh capitao!",a.chaves[i].nome);
         return;
     }
     a.chaves[i].capitao = 0;
@@ -585,3 +602,4 @@ void Q12_7(char* arv, int id, int op, int t){
 
     return;
 }
+
