@@ -1,6 +1,9 @@
 #include "TABM.c"
 #include <limits.h>
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (4) A menor e a maior seleção, isto é, com menos ou mais convocados
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int compara_Q4(const void *a, const void *b) {
     char **pa = (char**)a;
     char **pb = (char**)b;
@@ -10,15 +13,17 @@ int compara_Q4(const void *a, const void *b) {
 void Q4(char* tabela){
     FILE * fp = fopen(tabela, "rb");
     if(!fp) exit(1);
-    int qtd, respM = INT_MIN, respm = INT_MAX, num;
-    char maior_sel[20], menor_sel[20], aux[20], tmp=0;
+    int qtd, respM = INT_MIN, respm = INT_MAX, num, tmp=0, lim;
+    char maior_sel[20], menor_sel[20], aux[20];
 
     while(fread(&aux, sizeof(char)*20, 1, fp) == 1){
         fread(&qtd, sizeof(int), 1, fp);
         tmp = 0;
+        lim = qtd;
         while(fread(&num, sizeof(int), 1, fp) == 1){
             tmp++;
-            if(tmp == qtd) break;
+            if(num == -1) qtd--;
+            if(tmp == lim) break;
         }
         if(qtd > respM){
             respM = qtd;
@@ -100,9 +105,83 @@ void Q4(char* tabela){
             free(vetm);
         }
     }
+    fclose(fp);
     return;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (5) Busca de todos os jogadores que atuam fora do seu país de origem
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Q5(char* tabela, char* arv){
+    FILE * fp = fopen(tabela, "rb");
+    if(!fp) exit(1);
+
+    int qtd, num, tmp = 0;
+    char sele[20],aux[20];
+    TABM a;
+
+    while(fread(&sele, sizeof(char)*20, 1, fp) == 1){
+        fread(&qtd, sizeof(int), 1, fp);
+        tmp = 0;
+        printf("\n");
+        printf("\n\t%s: ",sele);
+        while(tmp != qtd && fread(&num, sizeof(int), 1, fp) == 1){
+            strcpy(aux,TABM_busca(arv,num));
+            if(strcmp(aux,"NULL") != 0){
+                FILE* fj = fopen(aux,"rb");
+                if(!fj) exit(1);
+                fread(&a,sizeof(TABM),1,fj);
+                fclose(fj);
+
+                int i;
+                for(i = 0; a.chaves[i].id != num; i++);
+                if(strcmp(a.chaves[i].pais_time,sele) != 0) printf("\n\t%d. %s (%s)",a.chaves[i].id, a.chaves[i].nome, a.chaves[i].pais_time);
+            }
+            tmp++;
+        }
+    }
+    fclose(fp);
+    return;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (6) Busca de todos os jogadores que atuam no seu país de origem
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Q6(char* tabela,char* arv){
+    FILE * fp = fopen(tabela, "rb");
+    if(!fp) exit(1);
+
+    int qtd, num, tmp = 0;
+    char sele[20],aux[20];
+    TABM a;
+
+    while(fread(&sele, sizeof(char)*20, 1, fp) == 1){
+        fread(&qtd, sizeof(int), 1, fp);
+        tmp = 0;
+        printf("\n");
+        printf("\n\t%s: ",sele);
+        while(tmp != qtd && fread(&num, sizeof(int), 1, fp) == 1){
+            strcpy(aux,TABM_busca(arv,num));
+            if(strcmp(aux,"NULL") != 0){
+                FILE* fj = fopen(aux,"rb");
+                if(!fj) exit(1);
+                fread(&a,sizeof(TABM),1,fj);
+                fclose(fj);
+
+                int i;
+                for(i = 0; a.chaves[i].id != num; i++);
+                if(strcmp(a.chaves[i].pais_time,sele) == 0) printf("\n\t%d. %s",a.chaves[i].id, a.chaves[i].nome);
+            }
+            tmp++;
+        }
+    }
+    fclose(fp);
+    return;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (7) Busca de todos os jogadores que nasceram no mesmo ano
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Q7(char* raiz, int ano){
     FILE* fp = fopen(raiz,"rb");
     if(fp){
@@ -121,6 +200,9 @@ void Q7(char* raiz, int ano){
     return;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (8) Busca de todos os jogadores que nasceram no mesmo mês
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Q8(char* raiz, char* Mes){
     FILE* fp = fopen(raiz,"rb");
     if(fp){
@@ -139,6 +221,9 @@ void Q8(char* raiz, char* Mes){
     return;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (11) Busca das informações subordinadas, dadas a chave primária (identificador único do jogador)
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Q11(char* arv,int ch){
     FILE* fp = fopen(arv,"rb");
     if(!fp) exit(1);
@@ -162,6 +247,7 @@ void Q11(char* arv,int ch){
 
     printf("\n\n\tINFOS SUBORDINADAS");
     printf("\n\tNome: %s",no.chaves[i].nome);
+    printf("\n\tSelecao: %s", no.chaves[i].sele);
     printf("\n\tNumero da camisa: %d", no.chaves[i].num_camisa);
     printf("\n\tPosicao: %s", no.chaves[i].posicao);
     printf("\n\tData de nascimento: %d %s %d", no.chaves[i].dia, no.chaves[i].mes, no.chaves[i].ano);
@@ -175,3 +261,327 @@ void Q11(char* arv,int ch){
     return;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (12.1) Alteração do número da camisa de um jogador
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Q12_1(char* arv, int id, int novo_num){
+    char resp[20], sele_tmp[20], aux[20];
+    int qtd, tmp, num, ver = 0;
+    strcpy(resp,TABM_busca(arv,id));
+    FILE* fj = fopen(resp,"rb");
+    if(!fj) exit(1);
+    TABM a, b;
+    fread(&a,sizeof(TABM),1,fj);
+    fclose(fj);
+
+    int i = 0;
+    for(i = 0; a.chaves[i].id != id; i++);
+
+    char selecao[20];
+    strcpy(selecao,a.chaves[i].sele);
+
+    FILE* fp = fopen("Tabelas/Nacionalidades.bin", "rb");
+    if(!fp) exit(1);
+
+    while(fread(&sele_tmp, sizeof(char)*20, 1, fp) == 1){
+        fread(&qtd, sizeof(int), 1, fp);
+        tmp = 0;
+        while((tmp != qtd) && (fread(&num, sizeof(int), 1, fp) == 1)){
+            if(strcmp(sele_tmp,selecao) == 0){
+                strcpy(aux,TABM_busca(arv,num));
+                if(strcmp(aux,"NULL") != 0){
+                    fj = fopen(aux,"rb");
+                    if(!fj) exit(1);
+                    fread(&b,sizeof(TABM),1,fj);
+                    fclose(fj);
+
+                    int j;
+                    for(j = 0; b.chaves[j].id != num; j++);
+                    if(b.chaves[j].num_camisa == novo_num){
+                        printf("\n");
+                        printf("\n\tPREZADO USUARIO: Ja existe um jogador desta selecao com este numero!");
+                        fclose(fp);
+                        return;
+                    }
+                }
+            }
+            tmp++;
+        }
+    }
+    a.chaves[i].num_camisa = novo_num;
+    printf("\n");
+    printf("\n\tAlterado com sucesso!");
+    fj = fopen(resp, "wb");
+    fwrite(&a,sizeof(TABM),1,fj);
+    fclose(fj);
+    fclose(fp);
+    return;
+}
+
+void Q12_2(char* arv, int id, char* pos){
+    char resp[20];
+    strcpy(resp,TABM_busca(arv,id));
+    FILE* fj = fopen(resp,"rb");
+    if(!fj) exit(1);
+    TABM a;
+    fread(&a,sizeof(TABM),1,fj);
+    fclose(fj);
+
+    int i = 0;
+    for(i = 0; a.chaves[i].id != id; i++);
+
+    if(strcmp(a.chaves[i].posicao,"GK") == 0){
+        printf("\n\tPREZADO USUARIO: Nao eh possivel alterar a posicao de um goleiro!");
+        return;
+    }
+
+    if(strcmp(pos, a.chaves[i].posicao)){ //times diferentes
+        strcpy(a.chaves[i].posicao, pos);
+        tabela_posicoes_alterar("EURO.txt", id, pos);
+        printf("\n\n\tAlterado com sucesso e tabela de posicoes atualizada!");
+        fj = fopen(resp, "wb");
+        fwrite(&a, sizeof(TABM), 1, fj);
+        fclose(fj);
+    }else printf("\n\n\tPREZADO USUARIO: O jogador ja joga nesta posicao!");
+    
+    return;
+}
+
+void Q12_3(char* arv, int id, int nova_idade){
+    char resp[20];
+    strcpy(resp,TABM_busca(arv,id));
+    FILE* fj = fopen(resp,"rb");
+    if(!fj) exit(1);
+    TABM a;
+    fread(&a,sizeof(TABM),1,fj);
+    fclose(fj);
+
+    int i = 0;
+    for(i = 0; a.chaves[i].id != id; i++);
+
+    if(nova_idade >= a.chaves[i].idade){
+        a.chaves[i].idade = nova_idade;
+        printf("\n");
+        printf("\n\tAlterado com sucesso!");
+        fj = fopen(resp,"wb");
+        fwrite(&a,sizeof(TABM),1,fj);
+        fclose(fj);
+    }
+    else{
+        printf("\n");
+        printf("\n\tPREZADO USUARIO: Nao eh possivel retrocedor uma idade!");
+    }
+    return;
+}
+
+void Q12_4(char* arv, int id, int novas_partidas){
+    char resp[20], sele_tmp[20], aux[20];
+    strcpy(resp,TABM_busca(arv,id));
+    FILE* fj = fopen(resp,"rb");
+    if(!fj) exit(1);
+    TABM a, b;
+    fread(&a,sizeof(TABM),1,fj);
+    fclose(fj);
+
+    int i = 0;
+    for(i = 0; a.chaves[i].id != id; i++);
+
+    if(novas_partidas >= a.chaves[i].part_sel){
+        a.chaves[i].part_sel = novas_partidas;
+        printf("\n\n\tAlterado com sucesso!");
+        fj = fopen(resp, "wb");
+        fwrite(&a, sizeof(TABM), 1, fj);
+        fclose(fj);
+    }else printf("\n\n\tPREZADO USUARIO: Não eh possivel retroceder a quantidade de partidas!");
+    
+    return;
+}
+
+void Q12_5(char* arv, int id, int novos_gols){
+    char resp[20], sele_tmp[20], aux[20];
+    strcpy(resp,TABM_busca(arv,id));
+    FILE* fj = fopen(resp,"rb");
+    if(!fj) exit(1);
+    TABM a, b;
+    fread(&a,sizeof(TABM),1,fj);
+    fclose(fj);
+
+    int i = 0;
+    for(i = 0; a.chaves[i].id != id; i++);
+
+    if(novos_gols >= a.chaves[i].gol_sel){
+        a.chaves[i].gol_sel = novos_gols;
+        printf("\n\n\tAlterado com sucesso!");
+        fj = fopen(resp, "wb");
+        fwrite(&a, sizeof(TABM), 1, fj);
+        fclose(fj);
+    }else printf("\n\n\tPREZADO USUARIO: Não eh possivel retroceder a quantidade de gols!");
+    
+    return;
+}
+
+void Q12_6(char* arv, int id, char * novo_time){
+    char resp[20];
+    strcpy(resp,TABM_busca(arv,id));
+    FILE* fj = fopen(resp,"rb");
+    if(!fj) exit(1);
+    TABM a;
+    fread(&a,sizeof(TABM),1,fj);
+    fclose(fj);
+    
+    //time e o pais
+    char novo_pais[21];
+    printf("\n\n\tQual o pais desse time? ");
+    scanf("%s", novo_pais);
+
+    int i = 0;
+    for(i = 0; a.chaves[i].id != id; i++);
+
+    if(strcmp(novo_time, a.chaves[i].time)){ //times diferentes
+        strcpy(a.chaves[i].time, novo_time);
+        strcpy(a.chaves[i].pais_time, novo_pais);
+        printf("\n\n\tAlterado com sucesso!");
+        fj = fopen(resp, "wb");
+        fwrite(&a, sizeof(TABM), 1, fj);
+        fclose(fj);
+    }else printf("\n\n\tPREZADO USUARIO: O jogador ja joga neste time!");
+    
+    return;
+}
+
+
+void vira_capitao(char * arv, int id){
+    char resp[20], sele_tmp[20], aux[20];
+    int qtd, tmp, num, ver = 0;
+    strcpy(resp,TABM_busca(arv,id));
+    FILE* fj = fopen(resp,"rb");
+    if(!fj) exit(1);
+    TABM a, b;
+    fread(&a,sizeof(TABM),1,fj);
+    fclose(fj);
+
+    int i = 0;
+    for(i = 0; a.chaves[i].id != id; i++);
+
+    if(a.chaves[i].capitao){
+        printf("\n\tPREZADO USUARIO: Este jogador ja eh capitao!");
+        return;
+    }
+
+    char selecao[20];
+    strcpy(selecao,a.chaves[i].sele);
+
+    FILE* fp = fopen("Tabelas/Nacionalidades.bin", "rb");
+    if(!fp) exit(1);
+
+    while(fread(&sele_tmp, sizeof(char)*20, 1, fp) == 1){
+        fread(&qtd, sizeof(int), 1, fp);
+        tmp = 0;
+        while((tmp != qtd) && (fread(&num, sizeof(int), 1, fp) == 1)){
+            if(strcmp(sele_tmp,selecao) == 0){ //Tornar alguem capitao
+                strcpy(aux,TABM_busca(arv,num));
+                if(strcmp(aux,"NULL") != 0){
+                    fj = fopen(aux,"rb");
+                    if(!fj) exit(1);
+                    fread(&b,sizeof(TABM),1,fj);
+                    fclose(fj);
+
+                    int j;
+                    for(j = 0; b.chaves[j].id != num; j++);
+                    if((b.chaves[j].capitao) && (b.chaves[j].id != id)){
+                        b.chaves[j].capitao = 0;
+                        FILE* fb = fopen(aux,"wb");
+                        fwrite(&b,sizeof(TABM),1,fb);
+                        fclose(fb);
+                    }
+                }
+            }
+            tmp++;
+        }
+    }
+    a.chaves[i].capitao = 1;
+    printf("\n");
+    printf("\n\tAlterado com sucesso!");
+    printf("\n\t%s eh o novo capitao do(a) %s",a.chaves[i].nome, a.chaves[i].sele);
+    fj = fopen(resp, "wb");
+    fwrite(&a,sizeof(TABM),1,fj);
+    fclose(fj);
+    fclose(fp);
+    return;
+    
+}
+
+void deixa_capitao(char * arv, int id, int t){
+    char resp[20], sele_tmp[20], aux[20], arq_maior[25];
+    int qtd, tmp, num, partidas = INT_MIN, id_maior;
+    strcpy(resp,TABM_busca(arv,id));
+    FILE* fj = fopen(resp,"rb");
+    if(!fj) exit(1);
+    TABM a, b, jog_maior;
+    fread(&a,sizeof(TABM),1,fj);
+    fclose(fj);
+
+    int i = 0;
+    for(i = 0; a.chaves[i].id != id; i++);
+    
+    if(!a.chaves[i].capitao){
+        printf("\n\tPREZADO USUARIO: Este jogador nao eh capitao!");
+        return;
+    }
+    a.chaves[i].capitao = 0;
+    fj = fopen(resp, "wb");
+    fwrite(&a,sizeof(TABM),1,fj);
+    fclose(fj);
+
+    char selecao[20];
+    strcpy(selecao,a.chaves[i].sele);
+
+    FILE* fp = fopen("Tabelas/Nacionalidades.bin", "rb");
+    if(!fp) exit(1);
+
+    while(fread(&sele_tmp, sizeof(char)*20, 1, fp) == 1){
+        fread(&qtd, sizeof(int), 1, fp);
+        tmp = 0;
+        while((tmp != qtd) && (fread(&num, sizeof(int), 1, fp) == 1)){
+            if(strcmp(sele_tmp,selecao) == 0){ //Tirar o capitão
+                strcpy(aux,TABM_busca(arv,num));
+                if(strcmp(aux,"NULL") != 0){
+                    fj = fopen(aux,"rb");
+                    if(!fj) exit(1);
+                    fread(&b,sizeof(TABM),1,fj);
+                    fclose(fj);
+
+                    int j;
+                    for(j = 0; b.chaves[j].id != num; j++);
+                    if((b.chaves[j].part_sel > partidas) && (b.chaves[j].id != id)){
+
+                        partidas = b.chaves[j].part_sel;
+                        id_maior = b.chaves[j].id;
+                        copia(&b,&jog_maior,t);
+                        strcpy(arq_maior,aux);
+                    }
+                }
+            }
+            tmp++;
+        }
+    }
+    int j;
+    for(j = 0; jog_maior.chaves[j].id != id_maior; j++);
+    jog_maior.chaves[j].capitao = 1;
+    fj = fopen(arq_maior,"wb");
+    fwrite(&jog_maior,sizeof(TABM),1,fj);
+    fclose(fj);
+    printf("\n");
+    printf("\n\tAlterado com sucesso!");
+    printf("\n\t%s eh o novo capitao do(a) %s",jog_maior.chaves[j].nome, jog_maior.chaves[j].sele);
+    return;
+}
+
+
+void Q12_7(char* arv, int id, int op, int t){
+
+    if(op) vira_capitao(arv, id);
+    else deixa_capitao(arv, id, t);
+
+    return;
+}

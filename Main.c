@@ -41,10 +41,18 @@ int main(void){
             printf("\n");
             break;
         case 5:
-            /* (5) Busca de todos os jogadores que atuam fora do seu país de origem; */
+            printf("\n\n\t=====================================================================================================");
+            printf("\n\tJOGADORES QUE ATUAM FORA DO SEU PAIS DE ORIGEM: \n");
+            Q5("Tabelas/Nacionalidades.bin",raiz);
+            printf("\n\n\t=====================================================================================================");
+            printf("\n");
             break;
         case 6:
-            /* (6) Busca de todos os jogadores que atuam no seu país de origem; */
+            printf("\n\n\t=====================================================================================================");
+            printf("\n\tJOGADORES QUE ATUAM NO SEU PAIS DE ORIGEM: \n");
+            Q6("Tabelas/Nacionalidades.bin",raiz);
+            printf("\n\n\t=====================================================================================================");
+            printf("\n");
             break;
         case 7:
             printf("\n\tDigite o ano: ");
@@ -94,10 +102,70 @@ int main(void){
                 break;
             break;
         case 12:
-            /* (12) Alteração SOMENTE de algumas informações, por exemplo, número da camisa que ele usa em
-            sua respectiva seleção, a posição que ele joga (EXCETO GK), o número de partidas pela seleção, o
-            número de gols, o jogador passar a (ou deixar de) ser capitão, o país do seu time atual e o nome do
-            time atual; */
+            int resp = 1;
+            do{
+                printf("\n\n\t=====================================================================================================");
+                printf("\n\n\t0 - Sair\n\n\t1 - Numero da camisa\n\n\t2 - Posicao\n\n\t3 - Idade\n\n\t4 - Partidas pela selecao\n\n\t5 - Gols pela selecao\n\n\t6 - Time\n\n\t7 - Capitao");
+                printf("\n\n\t=====================================================================================================");
+                printf("\n");
+                printf("\n\n\tDigite uma das opcoes: ");
+                scanf("%d", &resp);
+                switch (resp){
+                case 1:
+                    int novo_num;
+                    printf("\tDigite o id do jogador e o novo numero da camisa: ");
+                    scanf("%d %d",&id,&novo_num);
+                    printf("\n\n\t=====================================================================================================");
+                    Q12_1(raiz,id,novo_num);
+                    break;
+                case 2:
+                    char nova_pos[20];
+                    printf("\tDigite o id do jogador e a nova posicao: ");
+                    scanf("%d %s",&id,nova_pos);
+                    printf("\n\n\t=====================================================================================================");
+                    Q12_2(raiz,id,nova_pos);
+                    break;
+                case 3:
+                   int nova_idade;
+                    printf("\tDigite o id do jogador e a nova idade: ");
+                    scanf("%d %d",&id,&nova_idade);
+                    printf("\n\n\t=====================================================================================================");
+                    Q12_3(raiz,id,nova_idade);
+                    break;
+                case 4:
+                    int nova_qtd;
+                    printf("\tDigite o id do jogador e a nova quantidade de partidas: ");
+                    scanf("%d %d",&id,&nova_qtd);
+                    printf("\n\n\t=====================================================================================================");
+                    Q12_4(raiz,id,nova_qtd);
+                    break;
+                case 5:
+                    int nova_qtd_gols;
+                    printf("\tDigite o id do jogador e a nova quantidade de partidas: ");
+                    scanf("%d %d",&id,&nova_qtd_gols);
+                    printf("\n\n\t=====================================================================================================");
+                    Q12_5(raiz,id,nova_qtd_gols);
+                    break;
+                case 6:
+                    char novo_time[20];
+                    printf("\tDigite o id do jogador e o novo time: ");
+                    scanf("%d %s",&id,novo_time);
+                    printf("\n\n\t=====================================================================================================");
+                    Q12_6(raiz,id,novo_time);
+                    break;
+                case 7:
+                    int op;
+                    printf("\tDigite o id e 1 para tornar e 0 para retirar: ");
+                    scanf("%d %d", &id, &op);
+                    printf("\n\n\t=====================================================================================================");
+                    Q12_7(raiz, id, op, t);
+                    break;  
+                default:
+                    if(resp != 0) printf("\tOpcao invalida!!!\n");
+                    break;      
+                }
+
+            }while(resp);
             break;
         case 13:
             /* (13) Busca de todos os jogadores de uma seleção; */

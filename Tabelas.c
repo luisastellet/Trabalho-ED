@@ -117,6 +117,75 @@ void tabela_posicoes(char* entrada){
     fclose(fs);
 }
 
+void tabela_posicoes_alterar(char* entrada, int id, char* nova_pos){
+    FILE* fp = fopen(entrada, "r");
+    FILE* fs = fopen("Tabelas/Posições.bin", "wb");
+    if(!fp || !fs) exit(1);
+    char posicao[5], tmp[200], selecao[20];
+    int cont_GK = 0, cont_MF = 0, cont_DF = 0, cont_FW = 0, tmp1, tmp2;
+    // GK MF DF FW
+    while((fscanf(fp,"%s", selecao) == 1)){
+        while(fscanf(fp, "%d/%d/%2s/%199[^\n]",&tmp1,&tmp2,posicao,tmp) == 4){
+            if(tmp1 == id) strcpy(posicao,nova_pos);
+            if(strcmp("GK", posicao) == 0) cont_GK++;
+            if(strcmp("MF", posicao) == 0) cont_MF++;
+            if(strcmp("DF", posicao) == 0) cont_DF++;
+            if(strcmp("FW", posicao) == 0) cont_FW++;
+        }
+    }
+    fwrite("GK", sizeof(char)*5, 1, fs);
+    fwrite(&cont_GK, sizeof(int), 1, fs);
+
+    fclose(fp);
+    fp = fopen(entrada, "r");
+    while((fscanf(fp,"%s", selecao) == 1)){
+        while(fscanf(fp, "%d/%d/%2s/%199[^\n]",&tmp1,&tmp2,posicao,tmp) == 4){
+            if(tmp1 == id) strcpy(posicao,nova_pos);
+            if(strcmp("GK", posicao) == 0){
+                fwrite(&tmp1, sizeof(int), 1, fs);
+            }
+        }
+
+    }
+    fwrite("MF", sizeof(char)*5, 1, fs);
+    fwrite(&cont_MF, sizeof(int), 1, fs);
+    fclose(fp);
+    fp = fopen(entrada, "r");
+    while((fscanf(fp,"%s", selecao) == 1)){
+        while(fscanf(fp, "%d/%d/%2s/%199[^\n]",&tmp1,&tmp2,posicao,tmp) == 4){
+            if(tmp1 == id) strcpy(posicao,nova_pos);
+            if(strcmp("MF", posicao) == 0){
+                fwrite(&tmp1, sizeof(int), 1, fs);
+            }
+        }
+    }
+    fwrite("DF", sizeof(char)*5, 1, fs);
+    fwrite(&cont_DF, sizeof(int), 1, fs);
+    fclose(fp);
+    fp = fopen(entrada, "r");    
+    while((fscanf(fp,"%s", selecao) == 1)){
+        while(fscanf(fp, "%d/%d/%2s/%199[^\n]",&tmp1,&tmp2,posicao,tmp) == 4){
+            if(tmp1 == id) strcpy(posicao,nova_pos);
+            if(strcmp("DF", posicao) == 0){
+                fwrite(&tmp1, sizeof(int), 1, fs);
+            }
+        }
+    }
+    fwrite("FW", sizeof(char)*5, 1, fs);
+    fwrite(&cont_FW, sizeof(int), 1, fs);
+    fclose(fp);
+    fp = fopen(entrada, "r");    
+    while((fscanf(fp,"%s", selecao) == 1)){
+        while(fscanf(fp, "%d/%d/%2s/%199[^\n]",&tmp1,&tmp2,posicao,tmp) == 4){
+            if(tmp1 == id) strcpy(posicao,nova_pos);
+            if(strcmp("FW", posicao) == 0){
+                fwrite(&tmp1, sizeof(int), 1, fs);
+            }
+        }
+    }
+    fclose(fp);
+    fclose(fs);
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //          PRINTAR TABELA DE POSIÇÕES

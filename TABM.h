@@ -18,6 +18,7 @@ typedef struct jogador{
     char pais_time[21];
     char time[31];
     int capitao; // 1 ou 0 
+    char sele[31];
 }TJ;
 
 typedef struct arvbm{

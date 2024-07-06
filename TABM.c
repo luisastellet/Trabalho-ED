@@ -10,6 +10,7 @@
 //          FUNÇÃO DE BUSCA
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 char* TABM_busca(char* arq, int id){
+    if(id == -1) return "NULL";
     FILE* fp = fopen(arq,"rb");
     if(!fp) exit(1);
     TABM a;
@@ -77,6 +78,7 @@ void copia(TABM * T, TABM * aux, int t){
         strcpy(aux->chaves[i].pais_time,T->chaves[i].pais_time);
         strcpy(aux->chaves[i].time,T->chaves[i].time);
         aux->chaves[i].capitao = T->chaves[i].capitao;
+        strcpy(aux->chaves[i].sele,T->chaves[i].sele);
     }
     for(i = 0; i<= 2 * t;i++){
         strcpy(aux->filhos[i],T->filhos[i]);
@@ -98,6 +100,7 @@ TJ copia_chaves (TJ aux, TJ T){
     strcpy(aux.pais_time,T.pais_time);
     strcpy(aux.time,T.time);
     aux.capitao = T.capitao;
+    strcpy(aux.sele,T.sele);
     return aux;
 }
 
@@ -606,11 +609,11 @@ void le_dados(char * arquivo, char ** raiz, int t, int* cont){
     char tmp[30];
     while(fscanf(fp, "%s", tmp) == 1){ //lendo por seleção
         while(contar && (fscanf(fp, "%d/%d/%4[^/]/%30[^/]/%d %10s %d (aged %d)/%d/%d/%20[^/]/%30[^\n]", &jogador->id, &jogador->num_camisa, jogador->posicao, jogador->nome, &jogador->dia, jogador->mes, &jogador->ano, &jogador->idade, &jogador->part_sel, &jogador->gol_sel, jogador->pais_time, jogador->time) == 12)){ //lendo por jogador
+            strcpy(jogador->sele,tmp);
             if(strstr(jogador->nome, "(captain)")) jogador->capitao = 1;
             else jogador->capitao = 0;
             for(int i=0; i<strlen(jogador->nome); i++){
                 if(jogador->nome[i] == '(') jogador->nome[i] = '\0';
-                break;
             }
             strcpy((*raiz),TABM_insere(jogador, t, raiz, cont));
             contar--;
