@@ -2,6 +2,115 @@
 #include <limits.h>
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (3) Os jogadores que mais e menos atuaram no total;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+int compara_Q3(const void* a, const void* b){
+    TJ* pa = (TJ*)a;
+    TJ* pb = (TJ*)b;
+
+    return strcmp((pa)->nome,(pb)->nome);
+}
+
+void Q3_percorre(char*arv,TJ* jogadorM, TJ* jogadorm,int* contM,int* contm){
+    FILE* fp = fopen(arv,"rb");
+    if(fp){
+        TABM no;
+        fread(&no,sizeof(TABM),1,fp);
+        if(!no.folha){
+            Q3_percorre(no.filhos[0],jogadorM,jogadorm,contM,contm);
+        }
+        if(no.folha){
+            for(int i = 0; i < no.nchaves; i++){
+                if(no.chaves[i].part_sel == jogadorM->part_sel) (*contM)++;
+                if(no.chaves[i].part_sel > jogadorM->part_sel){
+                    *jogadorM = copia_chaves(*jogadorM,no.chaves[i]);
+                    *contM = 1;
+                }
+                if(no.chaves[i].part_sel == jogadorm->part_sel) (*contm)++;
+                if(no.chaves[i].part_sel < jogadorm->part_sel){
+                    *jogadorm = copia_chaves(*jogadorm,no.chaves[i]);
+                    *contm = 1;
+                }
+            }
+            Q3_percorre(no.prox,jogadorM,jogadorm,contM,contm);
+        }
+    }
+    return;
+}
+
+void Q3_preenche(char * arv, TJ jogadorM, TJ jogadorm, int * indiceM, int * indicem, TJ * vetM, TJ * vetm,int contM, int contm){
+    FILE* fp = fopen(arv,"rb");
+    if(fp){
+        TABM no;
+        fread(&no,sizeof(TABM),1,fp);
+        if(!no.folha){
+            Q3_preenche(no.filhos[0], jogadorM, jogadorm, indiceM, indicem, vetM, vetm,contM,contm);
+        }
+        if(no.folha){
+            for(int i = 0; i < no.nchaves; i++){
+                if((contM > 1) && (no.chaves[i].part_sel == jogadorM.part_sel)){
+                    vetM[(*indiceM)] = copia_chaves(vetM[(*indiceM)],no.chaves[i]);
+                    (*indiceM)++;
+                }
+                if(contm > 1 && no.chaves[i].part_sel == jogadorm.part_sel){
+                    vetm[(*indicem)] = copia_chaves(vetm[(*indicem)],no.chaves[i]);
+                    (*indicem)++;
+                }
+            }
+            Q3_preenche(no.prox, jogadorM, jogadorm, indiceM, indicem, vetM, vetm,contM,contm);
+        }
+    }
+    return;
+}
+
+void Q3(char* arv){
+    TJ jogadorM, jogadorm;
+    int contM = 0, contm = 0;
+    jogadorm.part_sel = INT_MAX;
+    jogadorM.part_sel = INT_MIN;
+
+    Q3_percorre(arv,&jogadorM,&jogadorm,&contM,&contm);
+
+
+    if(contM == 1){
+        printf("\n\t%s eh o jogador que mais atuou na sua equipe, com %d partidas.\n",jogadorM.nome,jogadorM.part_sel);
+    }
+    if (contm == 1){
+        printf("\n\t%s eh o jogador que menos atuou na sua equipe, com %d partidas.\n",jogadorm.nome,jogadorm.part_sel);
+    }
+
+    if(contM > 1 || contm > 1){
+        TJ * vetm;
+        TJ * vetM;
+        if(contm > 1){
+            vetm = (TJ*)malloc((sizeof(TJ))*contm);
+        }
+        if(contM > 1) {
+            vetM = (TJ*)malloc((sizeof(TJ))*contM);
+        }
+
+        int indicem = 0, indiceM = 0;
+        Q3_preenche(arv, jogadorM, jogadorm, &indiceM, &indicem, vetM, vetm,contM, contm);
+
+
+        if(contM > 1)qsort(vetM, contM, sizeof(TJ), compara_Q3);
+        if(contm > 1)qsort(vetm, contm, sizeof(TJ), compara_Q3);
+
+        if(contM > 1){
+            printf("\n\tJogadores que mais atuaram no total em ordem alfabetica com %d partidas:\n", jogadorM.part_sel);
+            for(int i=0; i<contM; i++) printf("\n\t%s",vetM[i].nome);
+        }
+        if (contm > 1){
+            printf("\n\tJogadores que menos atuaram no total em ordem alfabetica com %d partidas:\n", jogadorm.part_sel);
+            for(int i=0; i<contm; i++) printf("\n\t%s",vetm[i].nome);        
+        }
+        if(contM > 1) free(vetM);
+        if(contm > 1) free(vetm);
+    }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //          (4) A menor e a maior seleção, isto é, com menos ou mais convocados
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int compara_Q4(const void *a, const void *b) {
@@ -600,6 +709,40 @@ void Q12_7(char* arv, int id, int op, int t){
     if(op) vira_capitao(arv, id);
     else deixa_capitao(arv, id, t);
 
+    return;
+}
+
+void Q13(char* arv, char*pais, char* tabela){
+    FILE * fp = fopen(tabela, "rb");
+    if(!fp) exit(1);
+
+    int qtd, num, tmp = 0;
+    char sele[20],aux[20];
+    TABM a;
+
+    printf("\n");
+    printf("\n\t%s: ",pais);
+    while(fread(&sele, sizeof(char)*20, 1, fp) == 1){
+        fread(&qtd, sizeof(int), 1, fp);
+        tmp = 0;
+        while(tmp != qtd && fread(&num, sizeof(int), 1, fp) == 1){
+            if(strcmp(sele,pais) == 0){
+                strcpy(aux,TABM_busca(arv,num));
+                if(strcmp(aux,"NULL") != 0){
+                    FILE* fj = fopen(aux,"rb");
+                    if(!fj) exit(1);
+                    fread(&a,sizeof(TABM),1,fj);
+                    fclose(fj);
+
+                    int i;
+                    for(i = 0; a.chaves[i].id != num; i++);
+                    printf("\n\t%d. %s",a.chaves[i].id, a.chaves[i].nome);
+                }
+            }    
+            tmp++;
+        }
+    }
+    fclose(fp);
     return;
 }
 

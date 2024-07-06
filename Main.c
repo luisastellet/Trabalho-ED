@@ -31,7 +31,11 @@ int main(void){
             /* (2) Os jogadores que mais e menos atuaram em suas equipes; */
             break;
         case 3:
-            /* (3) Os jogadores que mais e menos atuaram no total; */
+            printf("\n\n\t=====================================================================================================");
+            printf("\n\tJOGADORES COM MAIS OU MENOS JOGOS: \n");
+            Q3(raiz);
+            printf("\n\n\t=====================================================================================================");
+            printf("\n");
             break;
         case 4:
             printf("\n\n\t=====================================================================================================");
@@ -168,7 +172,29 @@ int main(void){
             }while(resp);
             break;
         case 13:
-            /* (13) Busca de todos os jogadores de uma seleção; */
+            char pais[20];
+            int p;
+            printf("\n\n\t=====================================================================================================");
+            printf("\n\n\t1 - Germany\n\n\t2 - Scotland\n\n\t3 - Croatia\n\n\t4 - Albania\n\n\t5 - Slovenia\n\n\t6 - Denmark\n\n\t7 - Netherlands\n\n\t8 - France\n\n\t9 - Ukraine\n\n\t10 - Georgia\n\n\t11 - Portugal");
+            printf("\n\n\t=====================================================================================================");
+            printf("\n");
+            printf("\n\n\tDigite uma das opcoes: ");
+            scanf("%d",&p);
+            if(p == 1) strcpy(pais,"Germany");
+            if(p == 2) strcpy(pais,"Scotland");
+            if(p == 3) strcpy(pais,"Croatia");
+            if(p == 4) strcpy(pais,"Albania");
+            if(p == 5) strcpy(pais,"Slovenia");
+            if(p == 6) strcpy(pais,"Denmark");
+            if(p == 7) strcpy(pais,"Netherlands");
+            if(p == 8) strcpy(pais,"France");
+            if(p == 9) strcpy(pais,"Ukraine");
+            if(p == 10) strcpy(pais,"Georgia");
+            if(p == 11) strcpy(pais,"Portugal");
+            printf("\n\n\t=====================================================================================================");
+            Q13(raiz,pais,"Tabelas/Nacionalidades.bin");
+            printf("\n\n\t=====================================================================================================");
+            printf("\n");
             break;
         case 14:
             /* (14) Busca e remoção de todos os capitães; */
