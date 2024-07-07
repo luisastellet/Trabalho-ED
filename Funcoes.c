@@ -1,10 +1,33 @@
 #include "TABM.c"
 #include <limits.h>
+void remove_tabela(char* tabela, int id){
+    FILE* fp = fopen(tabela,"rb+");
+    if(!fp) exit(1);
+    int id_atual, qtd, tmp = 0;
+    char sele[20];
+
+    while(fread(&sele,sizeof(char)*20,1,fp)){
+        fread(&qtd,sizeof(int),1,fp);
+        tmp = 0;
+        while(qtd != tmp && fread(&id_atual,sizeof(int),1,fp)){
+            if(id == id_atual){
+                fseek(fp,-sizeof(int),SEEK_CUR);
+                int e = -1;
+                fwrite(&e,sizeof(int),1,fp);
+                fclose(fp);
+                return;
+            }
+            tmp++;
+        }
+    }
+    fclose(fp);
+    return;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //          (2) Os jogadores que mais e menos atuaram em suas equipes; 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-int compara_Q2(const void* a, const void* b){
+int compara_TJ(const void* a, const void* b){
     TJ* pa = (TJ*)a;
     TJ* pb = (TJ*)b;
 
@@ -87,16 +110,16 @@ void Q2(char* tabela, char * arv){
             }
         }
 
-        if(contM > 1)qsort(vetM, contM, sizeof(TJ), compara_Q2);
-        if(contm > 1)qsort(vetm, contm, sizeof(TJ), compara_Q2);
+        if(contM > 1)qsort(vetM, contM, sizeof(TJ), compara_TJ);
+        if(contm > 1)qsort(vetm, contm, sizeof(TJ), compara_TJ);
 
         if(contM > 1){
-            printf("\n\tJogadores que mais atuaram no(a) %s em ordem alfabetica com %d partidas:\n", jogadorM.sele, jogadorM.part_sel);
+            printf("\n\tJogadores que mais atuaram no(a) %s em ordem alfabetica com %d partidas: ", jogadorM.sele, jogadorM.part_sel);
             for(int i=0; i<contM; i++) printf("\n\t%s",vetM[i].nome);
             free(vetM);
         }
         if (contm > 1){
-            printf("\n\tJogadores que menos atuaram no(a) %s em ordem alfabetica com %d partidas:\n", jogadorm.sele, jogadorm.part_sel);
+            printf("\n\tJogadores que menos atuaram no(a) %s em ordem alfabetica com %d partidas: ", jogadorm.sele, jogadorm.part_sel);
             for(int i=0; i<contm; i++) printf("\n\t%s",vetm[i].nome);    
             free(vetm);  
         }
@@ -111,13 +134,6 @@ void Q2(char* tabela, char * arv){
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //          (3) Os jogadores que mais e menos atuaram no total;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-int compara_Q3(const void* a, const void* b){
-    TJ* pa = (TJ*)a;
-    TJ* pb = (TJ*)b;
-
-    return strcmp((pa)->nome,(pb)->nome);
-}
-
 void Q3_percorre(char*arv,TJ* jogadorM, TJ* jogadorm,int* contM,int* contm){
     FILE* fp = fopen(arv,"rb");
     if(fp){
@@ -180,10 +196,10 @@ void Q3(char* arv){
 
 
     if(contM == 1){
-        printf("\n\t%s eh o jogador que mais atuou na sua equipe, com %d partidas.\n",jogadorM.nome,jogadorM.part_sel);
+        printf("\n\t%s eh o jogador que mais atuou na sua equipe (%s), com %d partidas.\n",jogadorM.nome,jogadorM.sele,jogadorM.part_sel);
     }
     if (contm == 1){
-        printf("\n\t%s eh o jogador que menos atuou na sua equipe, com %d partidas.\n",jogadorm.nome,jogadorm.part_sel);
+        printf("\n\t%s eh o jogador que menos atuou na sua equipe (%s), com %d partidas.\n",jogadorm.nome,jogadorm.sele,jogadorm.part_sel);
     }
 
     if(contM > 1 || contm > 1){
@@ -200,16 +216,16 @@ void Q3(char* arv){
         Q3_preenche(arv, jogadorM, jogadorm, &indiceM, &indicem, vetM, vetm,contM, contm);
 
 
-        if(contM > 1)qsort(vetM, contM, sizeof(TJ), compara_Q3);
-        if(contm > 1)qsort(vetm, contm, sizeof(TJ), compara_Q3);
+        if(contM > 1)qsort(vetM, contM, sizeof(TJ), compara_TJ);
+        if(contm > 1)qsort(vetm, contm, sizeof(TJ), compara_TJ);
 
         if(contM > 1){
             printf("\n\tJogadores que mais atuaram no total em ordem alfabetica com %d partidas:\n", jogadorM.part_sel);
-            for(int i=0; i<contM; i++) printf("\n\t%s",vetM[i].nome);
+            for(int i=0; i<contM; i++) printf("\n\t%d. %s (%s)",vetM[i].id,vetM[i].nome,vetM[i].sele);
         }
         if (contm > 1){
             printf("\n\tJogadores que menos atuaram no total em ordem alfabetica com %d partidas:\n", jogadorm.part_sel);
-            for(int i=0; i<contm; i++) printf("\n\t%s",vetm[i].nome);        
+            for(int i=0; i<contm; i++) printf("\n\t%d. %s (%s)",vetm[i].id,vetm[i].nome,vetm[i].sele);        
         }
         if(contM > 1) free(vetM);
         if(contm > 1) free(vetm);
@@ -221,7 +237,7 @@ void Q3(char* arv){
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //          (4) A menor e a maior seleção, isto é, com menos ou mais convocados
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-int compara_Q4(const void *a, const void *b) {
+int compara_str(const void *a, const void *b) {
     char **pa = (char**)a;
     char **pb = (char**)b;
     return strcmp(*pa, *pb);
@@ -232,7 +248,6 @@ void Q4(char* tabela){
     if(!fp) exit(1);
     int qtd, respM = INT_MIN, respm = INT_MAX, num, tmp=0, lim;
     char maior_sel[20], menor_sel[20], aux[20];
-
     while(fread(&aux, sizeof(char)*20, 1, fp) == 1){
         fread(&qtd, sizeof(int), 1, fp);
         tmp = 0;
@@ -257,9 +272,11 @@ void Q4(char* tabela){
     while(fread(&aux, sizeof(char)*20, 1, fp) == 1){
         fread(&qtd, sizeof(int), 1, fp);
         tmp = 0;
+        lim = qtd;
         while(fread(&num, sizeof(int), 1, fp) == 1){
             tmp++;
-            if(tmp == qtd) break;
+            if(num == -1) qtd--;
+            if(tmp == lim) break;
         }
         if(qtd == respM) contM++;
         if(qtd == respm) contm++;
@@ -283,15 +300,16 @@ void Q4(char* tabela){
             vetM = (char**)malloc((sizeof(char*))*contM);
             for(int i = 0; i < contM; i++) vetM[i] = malloc(sizeof(char)*21);
         }
-
         rewind(fp);
         int m=0, M=0;
         while(fread(&aux, sizeof(char)*20, 1, fp) == 1){
             fread(&qtd, sizeof(int), 1, fp);
             tmp = 0;
+            lim = qtd;
             while(fread(&num, sizeof(int), 1, fp) == 1){
                 tmp++;
-                if(tmp == qtd) break;
+                if(num == -1) qtd--;
+                if(tmp == lim) break;
             }
             if(contM > 1 && qtd == respM){
                 strcpy(vetM[M], aux);
@@ -302,9 +320,8 @@ void Q4(char* tabela){
                 m++;
             }
         }
-        if(contM > 1)qsort(vetM, contM, sizeof(char*), compara_Q4);
-        if(contm > 1)qsort(vetm, contm, sizeof(char*), compara_Q4);
-
+        if(contM > 1)qsort(vetM, contM, sizeof(char*), compara_str);
+        if(contm > 1)qsort(vetm, contm, sizeof(char*), compara_str);
         if(contM > 1){
             printf("\n\tMaiores selecoes empatadas em ordem alfabetica com %d jogadores: \n",respM);
             for(int i=0; i<contM; i++) printf("\n\t%s",vetM[i]);
@@ -442,90 +459,165 @@ void Q8(char* raiz, char* Mes){
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //          (9) Busca da(s) seleção(ções) com mais jogadores que atuam fora do seu país de origem
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// int compara_Q9(const void *a, const void *b) {
-//     char **pa = (char**)a;
-//     char **pb = (char**)b;
-//     return strcmp(*pa, *pb);
-// }
+void Q9(char* tabela, char * arv){
+    FILE * fp = fopen(tabela, "rb");
+    int qtd, num, cont, tmp, indice, qtd_maiores, maior = INT_MIN;
+    char sele[21], aux[25], resp_sele[21];
+    char * vet;
+    TABM a;
 
-// void Q9(char* tabela, char * arv){
-//     FILE * fp = fopen(tabela, "rb");
-//     int qtd, num, cont, tmp, indice, qtd_maiores, maior = INT_MIN;
-//     char sele[21], aux[25], resp_sele[21];
-//     char * vet;
-//     TABM a;
+    qtd_maiores = 0;
+    while(fread(&sele, sizeof(char)*20, 1, fp) == 1){
+        cont = 0;
+        fread(&qtd, sizeof(int), 1, fp);
+        tmp = 0;
+        while(tmp != qtd && fread(&num, sizeof(int), 1, fp) == 1){
+            strcpy(aux,TABM_busca(arv,num));
+            if(strcmp(aux,"NULL") != 0){
+                FILE* fj = fopen(aux,"rb");
+                if(!fj) exit(1);
+                fread(&a,sizeof(TABM),1,fj);
+                fclose(fj);
 
-//     qtd_maiores = 0;
-//     while(fread(&sele, sizeof(char)*20, 1, fp) == 1){
-//         cont = 0;
-//         fread(&qtd, sizeof(int), 1, fp);
-//         tmp = 0;
-//         while(tmp != qtd && fread(&num, sizeof(int), 1, fp) == 1){
-//             strcpy(aux,TABM_busca(arv,num));
-//             if(strcmp(aux,"NULL") != 0){
-//                 FILE* fj = fopen(aux,"rb");
-//                 if(!fj) exit(1);
-//                 fread(&a,sizeof(TABM),1,fj);
-//                 fclose(fj);
+                int i;
+                for(i = 0; a.chaves[i].id != num; i++);//achei o jogador
+                if(strcmp(a.chaves[i].pais_time, a.chaves[i].sele) != 0) cont++;
+            }
+            tmp++;
+        }
+        //acabei uma seleção
+        if(cont == maior) qtd_maiores++;
+        if(cont > maior){
+            maior = cont; 
+            strcpy(resp_sele, sele);
+            qtd_maiores = 1; 
+        }
+    }
 
-//                 int i;
-//                 for(i = 0; a.chaves[i].id != num; i++);//achei o jogador
-//                 if(strcmp(a.chaves[1].pais_time, a.chaves[i].sele) != 0) cont++;
-//             }
-//             tmp++;
-//         }
-//         //acabei uma seleção
-//         if(cont > maior){
-//             maior = cont; 
-//             strcpy(resp_sele, sele);
-//             qtd_maiores = 1; 
-//         }
-//         if(cont == maior) qtd_maiores++;
-//     }
+    if(qtd_maiores == 1) printf("\n\t%s eh a selecao com mais jogadores que atuam fora do seu país de origem com %d jogadores.\n", resp_sele, maior);
 
-//     if(qtd_maiores == 1) printf("\n\t%s eh a selecao com mais jogadores que atuam fora do seu país de origem, sao %d jogadores.\n", resp_sele, maior);
+    if(qtd_maiores > 1){
+        char **vet = (char**)malloc((sizeof(char*))*qtd_maiores);
+        for(int i = 0; i < qtd_maiores; i++) vet[i] = malloc(sizeof(char)*21);
+        int indice = 0;
 
-//     if(qtd_maiores > 1){
-//         char **vet = (char**)malloc((sizeof(char*))*qtd_maiores);
-//         for(int i = 0; i < qtd_maiores; i++) vet[i] = malloc(sizeof(char)*21);
-//         int indice = 0;
+        rewind(fp);
+        while(fread(&sele, sizeof(char)*20, 1, fp) == 1){
+            cont = 0;
+            fread(&qtd, sizeof(int), 1, fp);
+            tmp = 0;
+            while(tmp != qtd && fread(&num, sizeof(int), 1, fp) == 1){
+                strcpy(aux,TABM_busca(arv,num));
+                if(strcmp(aux,"NULL") != 0){
+                    FILE* fj = fopen(aux,"rb");
+                    if(!fj) exit(1);
+                    fread(&a,sizeof(TABM),1,fj);
+                    fclose(fj);
 
-//         rewind(fp);
-//         while(fread(&sele, sizeof(char)*20, 1, fp) == 1){
-//             cont = 0;
-//             fread(&qtd, sizeof(int), 1, fp);
-//             tmp = 0;
-//             while(tmp != qtd && fread(&num, sizeof(int), 1, fp) == 1){
-//                 strcpy(aux,TABM_busca(arv,num));
-//                 if(strcmp(aux,"NULL") != 0){
-//                     FILE* fj = fopen(aux,"rb");
-//                     if(!fj) exit(1);
-//                     fread(&a,sizeof(TABM),1,fj);
-//                     fclose(fj);
+                    int i;
+                    for(i = 0; a.chaves[i].id != num; i++);//achei o jogador
+                    if(strcmp(a.chaves[i].pais_time, a.chaves[i].sele) != 0) cont++;
+                }
+                tmp++;
+            }
+            if(cont == maior){
+                strcpy(vet[indice], sele);
+                indice++;
+            }
+        }
 
-//                     int i;
-//                     for(i = 0; a.chaves[i].id != num; i++);//achei o jogador
-//                     if(strcmp(a.chaves[1].pais_time, a.chaves[i].sele) != 0) cont++;
-//                 }
-//                 tmp++;
-//             }
-//             if(cont == maior){
-//                 strcpy(vet[indice], sele);
-//                 indice++;
-//             }
-//         }
+        qsort(vet, qtd_maiores, sizeof(char*), compara_str);
 
-//         qsort(vet, qtd_maiores, sizeof(char*), compara_Q9);
+        printf("\n\tSelecoes com mais jogadores que atuam fora do seu pais de origem em ordem alfabetica, com %d jogadores: ", maior);
+        for(int i=0; i<qtd_maiores; i++) printf("\n\t-%s",vet[i]);
+        for(int i=0; i<qtd_maiores; i++) free(vet[i]);
+        free(vet);
+    }
 
-//         printf("\n\tSelecoes com mais jogadores que atuam fora do seu pais de origem em ordem alfabetica, com %d jogadores: \n", maior);
-//         for(int i=0; i<qtd_maiores; i++) printf("\n\t%s",vet[i]);
-//         for(int i=0; i<qtd_maiores; i++) free(vet[i]);
-//         free(vet);
-//     }
+    fclose(fp);
+    return;
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (10) Busca da(s) seleção(ções) com mais jogadores que atuam no seu país de origem
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Q10(char* tabela, char * arv){
+    FILE * fp = fopen(tabela, "rb");
+    int qtd, num, cont, tmp, indice, qtd_maiores, maior = INT_MIN;
+    char sele[21], aux[25], resp_sele[21];
+    char * vet;
+    TABM a;
 
-//     fclose(fp);
-//     return;
-// }
+    qtd_maiores = 0;
+    while(fread(&sele, sizeof(char)*20, 1, fp) == 1){
+        cont = 0;
+        fread(&qtd, sizeof(int), 1, fp);
+        tmp = 0;
+        while(tmp != qtd && fread(&num, sizeof(int), 1, fp) == 1){
+            strcpy(aux,TABM_busca(arv,num));
+            if(strcmp(aux,"NULL") != 0){
+                FILE* fj = fopen(aux,"rb");
+                if(!fj) exit(1);
+                fread(&a,sizeof(TABM),1,fj);
+                fclose(fj);
+
+                int i;
+                for(i = 0; a.chaves[i].id != num; i++);//achei o jogador
+                if(strcmp(a.chaves[i].pais_time, a.chaves[i].sele) == 0) cont++;
+            }
+            tmp++;
+        }
+        //acabei uma seleção
+        if(cont == maior) qtd_maiores++;
+        if(cont > maior){
+            maior = cont; 
+            strcpy(resp_sele, sele);
+            qtd_maiores = 1; 
+        }
+    }
+
+    if(qtd_maiores == 1) printf("\n\t%s eh a selecao com mais jogadores que atuam no seu país de origem com %d jogadores.\n", resp_sele, maior);
+
+    if(qtd_maiores > 1){
+        char **vet = (char**)malloc((sizeof(char*))*qtd_maiores);
+        for(int i = 0; i < qtd_maiores; i++) vet[i] = malloc(sizeof(char)*21);
+        int indice = 0;
+
+        rewind(fp);
+        while(fread(&sele, sizeof(char)*20, 1, fp) == 1){
+            cont = 0;
+            fread(&qtd, sizeof(int), 1, fp);
+            tmp = 0;
+            while(tmp != qtd && fread(&num, sizeof(int), 1, fp) == 1){
+                strcpy(aux,TABM_busca(arv,num));
+                if(strcmp(aux,"NULL") != 0){
+                    FILE* fj = fopen(aux,"rb");
+                    if(!fj) exit(1);
+                    fread(&a,sizeof(TABM),1,fj);
+                    fclose(fj);
+
+                    int i;
+                    for(i = 0; a.chaves[i].id != num; i++);//achei o jogador
+                    if(strcmp(a.chaves[i].pais_time, a.chaves[i].sele) == 0) cont++;
+                }
+                tmp++;
+            }
+            if(cont == maior){
+                strcpy(vet[indice], sele);
+                indice++;
+            }
+        }
+
+        qsort(vet, qtd_maiores, sizeof(char*), compara_str);
+
+        printf("\n\tSelecoes com mais jogadores que atuam no seu pais de origem em ordem alfabetica, com %d jogadores: ", maior);
+        for(int i=0; i<qtd_maiores; i++) printf("\n\t-%s",vet[i]);
+        for(int i=0; i<qtd_maiores; i++) free(vet[i]);
+        free(vet);
+    }
+
+    fclose(fp);
+    return;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //          (11) Busca das informações subordinadas, dadas a chave primária (identificador único do jogador)
@@ -540,7 +632,7 @@ void Q11(char* arv,int ch){
 
     fp = fopen(resp,"rb");
     if(!fp){
-        printf("\tPREZADO USUARIO: O jogador nao se encontra na arvore");
+        printf("\n\n\tPREZADO USUARIO: O jogador nao se encontra na arvore");
         return;
     }
     TABM no;
@@ -550,7 +642,7 @@ void Q11(char* arv,int ch){
     int i = 0;
     while(i < no.nchaves && no.chaves[i].id != ch) i++;
 
-
+    printf("\n\n\tARQUIVO: %s",resp);
     printf("\n\n\tINFOS SUBORDINADAS");
     printf("\n\tNome: %s",no.chaves[i].nome);
     printf("\n\tSelecao: %s", no.chaves[i].sele);
@@ -941,5 +1033,67 @@ void Q13(char* arv, char*pais, char* tabela){
     }
     fclose(fp);
     return;
+}
+
+void Q14_B(char* arv){
+    FILE* fp  = fopen(arv,"rb");
+    if(fp){
+        TABM a;
+        fread(&a,sizeof(TABM),1,fp);
+        fclose(fp);
+        if(!a.folha){
+            Q14_B(a.filhos[0]);
+        }
+        if(a.folha){
+            for(int i = 0; i < a.nchaves; i++){
+                if(a.chaves[i].capitao) printf("\n\t%d. %s (%s)",a.chaves[i].id,a.chaves[i].nome, a.chaves[i].sele);
+            }
+            Q14_B(a.prox);
+        }
+    }
+    return;
+}
+
+void Q_14_R_percorre(char* arv, char* lista){
+    FILE* fp  = fopen(arv,"rb");
+    if(fp){
+        TABM a;
+        fread(&a,sizeof(TABM),1,fp);
+        fclose(fp);
+        if(!a.folha){
+            Q_14_R_percorre(a.filhos[0],lista);
+        }
+        if(a.folha){
+            for(int i = 0; i < a.nchaves; i++){
+                if(a.chaves[i].capitao){
+                    FILE* fs = fopen(lista,"ab");
+                    fwrite(&a.chaves[i].id,sizeof(int),1,fs);
+                    fclose(fs);
+                }
+            }
+            Q_14_R_percorre(a.prox,lista);
+        }
+    }
+    return;
+}
+
+char* Q14_R(char* arv, int t){
+    //Criando lista de capitães
+    FILE* fl = fopen("Tabelas/Capitães.bin","wb");
+    fclose(fl);
+    Q_14_R_percorre(arv,"Tabelas/Capitães.bin");
+
+    //Com a tabela criada, basta percorrer ir retirando, e buscar os id para colocar -1 na tabela de nacionalidade(não vi necessidade de mudar o de posições)
+    fl = fopen("Tabelas/Capitães.bin","rb");
+    int id_cap;
+    while(fread(&id_cap,sizeof(int),1,fl)){
+        deixa_capitao(arv,id_cap,t);
+        strcpy(arv,TABM_remover(arv,id_cap,t));
+        remove_tabela("Tabelas/Nacionalidades.bin",id_cap);
+    }
+    remove("Tabelas/Capitães.bin");
+    fclose(fl);
+
+    return arv;
 }
 

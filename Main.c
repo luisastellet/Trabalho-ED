@@ -36,7 +36,7 @@ int main(void){
             break;
         case 3:
             printf("\n\n\t=====================================================================================================");
-            printf("\n\tJOGADORES COM MAIS OU MENOS JOGOS: \n");
+            printf("\n\tJOGADORES COM MAIS OU MENOS JOGOS NO GERAL: \n");
             Q3(raiz);
             printf("\n\n\t=====================================================================================================");
             printf("\n");
@@ -88,26 +88,33 @@ int main(void){
             if(mes == 11) strcpy(Mes,"November");
             if(mes == 12) strcpy(Mes,"December");
             printf("\n\n\t=====================================================================================================");
-            printf("\n\n\tJogadores nascidos em %s:", Mes);
+            printf("\n\n\tJOGADORES NASCIDOS EM %s:", Mes);
             Q8(raiz,Mes);
             printf("\n\n\t=====================================================================================================");
             printf("\n");
             printf("\n");
             break;
         case 9:
-            /* (9) Busca da(s) seleção(ções) com mais jogadores que atuam fora do seu país de origem; */
+            printf("\n\n\t=====================================================================================================");
+            printf("\n\n\tSELEÇÃO COM JOGADORES QUE MAIS ATUAM FORA DO PAÍS DE ORIGEM: \n");
+            Q9("Tabelas/Nacionalidades.bin",raiz);
+            printf("\n\n\t=====================================================================================================");
+            printf("\n");
             break;
         case 10:
-            /* (10) Busca da(s) seleção(ções) com mais jogadores que atuam no seu país de origem; */
+            printf("\n\n\t=====================================================================================================");
+            printf("\n\n\tSELEÇÃO COM JOGADORES QUE MAIS ATUAM NO PAÍS DE ORIGEM: \n");
+            Q10("Tabelas/Nacionalidades.bin",raiz);
+            printf("\n\n\t=====================================================================================================");
+            printf("\n");
             break;
         case 11:
-                printf("\tDigite o id para obter as infos subordinadas a ele: ");
-                scanf("%d",&id);
-                printf("\n\n\t=====================================================================================================");
-                Q11(raiz,id);
-                printf("\n\n\t=====================================================================================================");
-                printf("\n");
-                break;
+            printf("\tDigite o id para obter as infos subordinadas a ele: ");
+            scanf("%d",&id);
+            printf("\n\n\t=====================================================================================================");
+            Q11(raiz,id);
+            printf("\n\n\t=====================================================================================================");
+            printf("\n");
             break;
         case 12:
             int resp = 1;
@@ -201,7 +208,27 @@ int main(void){
             printf("\n");
             break;
         case 14:
-            /* (14) Busca e remoção de todos os capitães; */
+            int e;
+            printf("\n\n\t=====================================================================================================");
+            printf("\n\n\t1 - Busca dos capitães\n\n\t2 - Remoção");
+            printf("\n\n\t=====================================================================================================");
+            printf("\n");
+            printf("\n\n\tDigite uma das opcoes: ");
+            scanf("%d",&e);
+            printf("\n\n\t=====================================================================================================");
+            if(e == 2) {
+                printf("\n\n\tREMOVENDO TODOS OS ATUAIS CAPITÃES");
+                strcpy(raiz,Q14_R(raiz,t));
+                printf("\n\n\tTABELAS ATUALIZADAS COM SUCESSO!");
+                //printa_nacionalidades("Tabelas/Nacionalidades.bin");
+                //printa_arqb("Arquivos/0068.bin",t);
+            }
+            else {
+                printf("\n\n\tCAPITÃES E SUAS RESPECTIVAS SELEÇÕES: ");
+                Q14_B(raiz);
+            }
+            printf("\n\n\t=====================================================================================================");
+            printf("\n");
             break;
         case 15:
             /* (15) Remoção de jogadores a partir de uma determinada idade; */
@@ -227,6 +254,17 @@ int main(void){
             printf("\n\n\t1 - Os jogador mais novo e mais velho\n\n\t2 - OS jogadores que mais e menos atuaram por suas equipes\n\n\t3 - Jogadores que mais e menos atuaram no geral\n\n\t4 - A maior e menor seleção\n\n\t5 - Busca de jogadores que atuam fora do seu país de origem\n\n\t6 - Busca de jogadores que atuam no seu país de origem\n\n\t7 - Busca de jogadores que nasceram no mesmo ano\n\n\t8 - Busca de jogadores que nasceram no mesmo mês\n\n\t9 - Busca das seleções com mais jogadores que atuam fora do seu páis de origem\n\n\t10 - Busca das seleções com mais jogadores que atuam no seu país de origem\n\n\t11 - Dados de um jogador pelo ID\n\n\t12 - Alteração de informações\n\n\t13 - Busca de todos os jogadores de uma seleção\n\n\t14 - Busca e remoção de todos os capitães\n\n\t15 - Remoção de jogadores a partir de uma determinada idade\n\n\t16 - Retirada de todos os jogadores de uma seleção que atuam num determinado país\n\n\t17 - Retirada de todos os os jogadores de uma seleção que não atuam no país de origem\n\n\t18 - Retirada de todos os os jogadores de uma seleção atuam fora do país de origem\n\n\t19 - Retirada de todos os os jogadores de uma seleção\n\n\t20 - Remoção de jogadores, dado um conjunto contendo suas chaves primárias.");
             printf("\n\n");
             printf("\t=====================================================================================================");
+            break;
+        case 22:
+            int arq;
+            char nome[20];
+            printf("Digite o numero do arquivo: ");
+            scanf("%d",&arq);
+            sprintf(nome, "Arquivos/%04d.bin", arq);
+            printa_arqb(nome,t);
+            break;
+        case 23:
+            printa_nacionalidades("Tabelas/Nacionalidades.bin");
             break;
         default:
             if(opcao != 0) printf("Opcao invalida!!!\n");

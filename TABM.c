@@ -12,6 +12,7 @@
 char* TABM_busca(char* arq, int id){
     if(id == -1) return "NULL";
     FILE* fp = fopen(arq,"rb");
+    //if(!fp) return "NULL";
     if(!fp) exit(1);
     TABM a;
     fread(&a,sizeof(TABM),1,fp);
@@ -21,6 +22,7 @@ char* TABM_busca(char* arq, int id){
     if ((i < a.nchaves) && (a.folha) && (id == a.chaves[i].id)) return arq;
     if (a.folha) return "NULL";
     if (a.chaves[i].id == id) i++;
+    if(i > a.nchaves) i = a.nchaves;
     return TABM_busca(a.filhos[i], id);
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -285,7 +287,7 @@ char* TABM_remover(char* no, int ch, int t){
     for(i = 0; i < arv.nchaves && arv.chaves[i].id < ch; i++);
 
     if((i < arv.nchaves) && (ch == arv.chaves[i].id) && (arv.folha)){ //Caso 1
-        printf("\nCASO 1\n");
+        //printf("\nCASO 1\n");
         int j;
         for(j = i; j < arv.nchaves-1;j++) arv.chaves[j] = copia_chaves(arv.chaves[j],arv.chaves[j+1]);
         arv.nchaves--;
@@ -314,7 +316,7 @@ char* TABM_remover(char* no, int ch, int t){
             fread(&i_mais_1,sizeof(TABM),1,fz);
             fclose(fz);
             if((i < arv.nchaves) && (i_mais_1.nchaves >= t)){ //Caso 3A direita
-                printf("\nCASO 3A: i menor que nchaves\n");
+                //printf("\nCASO 3A: i menor que nchaves\n");
                 copia(&i_mais_1,&z,t); //CHANCE DE MERDA
                 if(!y.folha){
                     y.chaves[t-1] = copia_chaves(y.chaves[t-1],arv.chaves[i]);
@@ -364,7 +366,7 @@ char* TABM_remover(char* no, int ch, int t){
             fread(&i_menos_1,sizeof(TABM),1,fz);
             fclose(fz);
             if((i > 0) && (z.nchaves == 0) && (i_menos_1.nchaves >= t)){//CASO 3A esquerda
-                printf("\nCASO 3A: i igual a nchaves\n");
+                //printf("\nCASO 3A: i igual a nchaves\n");
                 copia(&i_menos_1,&z,t); //z recebe i_menos_1
 
                 int j;
@@ -415,7 +417,7 @@ char* TABM_remover(char* no, int ch, int t){
                 fread(&i_mais_1,sizeof(TABM),1,fz);
                 fclose(fz);
                 if(i < arv.nchaves && i_mais_1.nchaves == t-1){
-                    printf("\nCASO 3B: i menor que nchaves\n");
+                    //printf("\nCASO 3B: i menor que nchaves\n");
                     copia(&i_mais_1,&z,t); // z = arv.filho[i+1]
                     if(!y.folha){
                         y.chaves[t-1] = copia_chaves(y.chaves[t-1],arv.chaves[i]);
@@ -454,12 +456,6 @@ char* TABM_remover(char* no, int ch, int t){
                     fwrite(&y,sizeof(TABM),1,fy);
                     fclose(fy);
 
-                    // if(strcmp(arv.filhos[i+1],"Filh") != 0){
-                    //     fz = fopen(arv.filhos[i+1],"wb");
-                    //     fwrite(&z,sizeof(TABM),1,fz);
-                    //     fclose(fz);
-                    // }
-
                     strcpy(no,TABM_remover(no,ch,t));
 
                     FILE* f_aux = fopen(arv.filhos[i],"rb");
@@ -479,7 +475,7 @@ char* TABM_remover(char* no, int ch, int t){
                 fread(&i_menos_1,sizeof(TABM),1,fz);
                 fclose(fz);
                 if((i > 0) && (i_menos_1.nchaves == t-1)){
-                    printf("\nCASO 3B: i igual a nchaves\n");
+                    //printf("\nCASO 3B: i igual a nchaves\n");
                     copia(&i_menos_1,&z,t); //z = arv.filho[i-1]
                     if(!y.folha){
                         if(i == arv.nchaves){
