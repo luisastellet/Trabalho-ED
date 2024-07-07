@@ -28,7 +28,11 @@ int main(void){
             por seleções e por posições; */
             break;
         case 2:
-            /* (2) Os jogadores que mais e menos atuaram em suas equipes; */
+            printf("\n\n\t=====================================================================================================");
+            printf("\n\tJOGADORES COM MAIS OU MENOS JOGOS EM CADA SELECAO: \n");
+            Q2("Tabelas/Nacionalidades.bin",raiz);
+            printf("\n\n\t=====================================================================================================");
+            printf("\n");
             break;
         case 3:
             printf("\n\n\t=====================================================================================================");
