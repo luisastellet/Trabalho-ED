@@ -34,12 +34,12 @@ void printa_nacionalidades(char * entrada){
     FILE* fp = fopen(entrada, "rb");
     if(!fp) exit(1);
     char selecao[20];
-    printf("Nacionalidades:\n");
+    printf("\n\tNacionalidades:\n");
 
     while(fread(selecao, sizeof(char)*20, 1, fp) == 1){
         int cont;
         fread(&cont,sizeof(int), 1,fp);
-        printf("%s %d ",selecao,cont);
+        printf("\n\t%s %d ",selecao,cont);
         int id;
         for(int i =0; i<cont; i++){
             fread(&id,sizeof(int), 1,fp);
@@ -198,7 +198,7 @@ void printa_posicoes(char * entrada){
     while(fread(posicao, sizeof(char)*5, 1, fp) == 1){
         int cont;
         fread(&cont,sizeof(int), 1,fp);
-        printf("%s %d ",posicao,cont);
+        printf("\n\t%s %d ",posicao,cont);
         int id;
         for(int i =0; i<cont; i++){
             fread(&id,sizeof(int), 1,fp);

@@ -296,6 +296,9 @@ char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont){
 //          FUNÇÃO PARA REMOVER CHAVES
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 char* TABM_remover(char* no, int ch, int t){
+    char aux[20];
+    strcpy(aux,TABM_busca(no,ch));
+    if(strcmp(aux,"NULL") == 0) return no;
     FILE* fp = fopen(no,"rb+");
     if(!fp) return no;
     TABM arv;
@@ -598,15 +601,15 @@ void printa_arqb(char* entrada, int t){
     FILE* fp = fopen(entrada, "rb");
     TABM novo;
     fread(&novo, sizeof(TABM),1,fp);
-    printf("Arquivo atual: %s\n",entrada);
-    printf("Folha: %d\n", novo.folha);
-    printf("N Chaves: %d\n", novo.nchaves);
-    printf("Proximo: %s\n", novo.prox);
-    for (int i = 0; i < novo.nchaves; i++) printf("%d/%d/%s/%s/%d %s %d (aged %d)/%d/%d/%s/%s\n", 
+    printf("\n\tArquivo atual: %s\n",entrada);
+    printf("\n\tFolha: %d\n", novo.folha);
+    printf("\n\tN Chaves: %d\n", novo.nchaves);
+    printf("\n\tProximo: %s\n", novo.prox);
+    for (int i = 0; i < novo.nchaves; i++) printf("\n\t%d/%d/%s/%s/%d %s %d (aged %d)/%d/%d/%s/%s\n", 
             novo.chaves[i].id, novo.chaves[i].num_camisa, novo.chaves[i].posicao, novo.chaves[i].nome, 
             novo.chaves[i].dia, novo.chaves[i].mes, novo.chaves[i].ano, novo.chaves[i].idade, novo.chaves[i].part_sel, 
             novo.chaves[i].gol_sel, novo.chaves[i].pais_time, novo.chaves[i].time);
-    for (int i = 0; i < 2*t; i++) printf("%s\n",novo.filhos[i]);
+    for (int i = 0; i < 2*t; i++) printf("\n\t%s\n",novo.filhos[i]);
     printf("\n\n\n");
     fclose(fp);
     return;

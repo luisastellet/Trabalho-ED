@@ -11,6 +11,7 @@ int main(void){
     mkdir("Tabelas",0777);
     printf("Insira o valor de t para a construcao da arvore: ");
     scanf("%d", &t);
+    if(t < 2) t = 2;
     le_dados("EURO.txt", &raiz, t, &cont);
     tabela_nacionalidade("EURO.txt");
     tabela_posicoes("EURO.txt");
@@ -96,7 +97,7 @@ int main(void){
             printf("\n");
             break;
         case 8:
-            printf("\n\tDigite o mes(numerico): ");
+            printf("\n\tDigite o mes (numerico): ");
             scanf("%d",&mes);
             char Mes[21];
             if(mes == 1) strcpy(Mes,"January");
@@ -266,6 +267,7 @@ int main(void){
             char paiis[20], sele[20];
             printf("\tDigite o seleção: ");
             scanf("%s",sele);
+            printf("\tDigite o pais: ");
             scanf("%s",paiis);
             printf("\n\n\t=====================================================================================================");
             printf("\n\n\tJOGADORES DO(A) %s QUE JOGAM NO(A) %s EXCLUÍDOS COM SUCESSO!\n",sele,paiis);
@@ -320,7 +322,11 @@ int main(void){
             printa_arqb(nome,t);
             break;
         case 23:
+            printf("\n");
+            printf("\t=====================================================================================================");
             printa_nacionalidades("Tabelas/Nacionalidades.bin");
+            printf("\n\n");
+            printf("\t=====================================================================================================");
             break;
         case 24:
             printf("\n");
@@ -328,6 +334,9 @@ int main(void){
             printa_posicoes("Tabelas/Posições.bin");
             printf("\n\n");
             printf("\t=====================================================================================================");
+            break;
+        case 25:
+            TABM_imprime(&raiz,t);
             break;
         default:
             if(opcao != 0) printf("Opcao invalida!!!\n");

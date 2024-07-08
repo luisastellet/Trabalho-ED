@@ -298,14 +298,14 @@ void Q1_nacionalidade(char* tabela, char * arv){
 
         if(contV > 1){
             printf("\n\tJOGADORES MAIS VELHOS EMPATADOS NA DATA %d/%d/%d: ", jogadorV.dia, month2num(jogadorV.mes),jogadorV.ano);
-            for(int i=0; i<contV; i++) printf("\n\t%s (%s)",vetV[i].nome,vetV[i].sele);
+            for(int i=0; i<contV; i++) printf("\n\t%s",vetV[i].nome);
             printf("\n");
             free(vetV);
         }
 
         if(contN > 1){
             printf("\n\tJOGADORES MAIS NOVOS EMPATADOS NA DATA %d/%d/%d: ", jogadorN.dia, month2num(jogadorN.mes),jogadorN.ano);
-            for(int i=0; i<contN; i++) printf("\n\t%s (%s)",vetN[i].nome, vetN[i].sele);
+            for(int i=0; i<contN; i++) printf("\n\t%s",vetN[i].nome);
             printf("\n");
             free(vetN);
         }
@@ -628,10 +628,10 @@ void Q3(char* arv){
 
 
     if(contM == 1){
-        printf("\n\t%s eh o jogador que mais atuou na sua equipe (%s), com %d partidas.\n",jogadorM.nome,jogadorM.sele,jogadorM.part_sel);
+        printf("\n\t%s eh o jogador que mais atuou no total, com %d partidas.\n",jogadorM.nome,jogadorM.part_sel);
     }
     if (contm == 1){
-        printf("\n\t%s eh o jogador que menos atuou na sua equipe (%s), com %d partidas.\n",jogadorm.nome,jogadorm.sele,jogadorm.part_sel);
+        printf("\n\t%s eh o jogador que menos atuou no total, com %d partidas.\n",jogadorm.nome,jogadorm.part_sel);
     }
 
     if(contM > 1 || contm > 1){
@@ -755,11 +755,11 @@ void Q4(char* tabela){
         if(contM > 1)qsort(vetM, contM, sizeof(char*), compara_str);
         if(contm > 1)qsort(vetm, contm, sizeof(char*), compara_str);
         if(contM > 1){
-            printf("\n\tMaiores seleções empatadas em ordem alfabética com %d jogadores: \n",respM);
+            printf("\n\n\tMaiores seleções empatadas em ordem alfabética com %d jogadores: ",respM);
             for(int i=0; i<contM; i++) printf("\n\t%s",vetM[i]);
         }
         if (contm > 1){
-            printf("\n\tMenores seleções empatadas em ordem alfabética com %d jogadores: \n",respm);
+            printf("\n\n\tMenores seleções empatadas em ordem alfabética com %d jogadores: ",respm);
             for(int i=0; i<contm; i++) printf("\n\t%s",vetm[i]);        }
         
         if(contM > 1){
@@ -960,8 +960,8 @@ void Q9(char* tabela, char * arv){
 
         qsort(vet, qtd_maiores, sizeof(char*), compara_str);
 
-        printf("\n\tSelecoes com mais jogadores que atuam fora do seu pais de origem em ordem alfabetica, com %d jogadores: ", maior);
-        for(int i=0; i<qtd_maiores; i++) printf("\n\t-%s",vet[i]);
+        printf("\n\tSeleções com mais jogadores que atuam fora do seu pais de origem em ordem alfabetica, com %d jogadores: ", maior);
+        for(int i=0; i<qtd_maiores; i++) printf("\n\t- %s",vet[i]);
         for(int i=0; i<qtd_maiores; i++) free(vet[i]);
         free(vet);
     }
@@ -1106,7 +1106,12 @@ void Q12_1(char* arv, int id, int novo_num){
     int qtd, tmp, num, ver = 0;
     strcpy(resp,TABM_busca(arv,id));
     FILE* fj = fopen(resp,"rb");
-    if(!fj) exit(1);
+    if(!fj){ 
+        printf("\n");
+        printf("\n\tPREZADO USUARIO: O jogador não está na árvore!");
+        return;
+    }    
+        
     TABM a, b;
     fread(&a,sizeof(TABM),1,fj);
     fclose(fj);
@@ -1162,7 +1167,11 @@ void Q12_2(char* arv, int id, char* pos){
     char resp[20];
     strcpy(resp,TABM_busca(arv,id));
     FILE* fj = fopen(resp,"rb");
-    if(!fj) exit(1);
+    if(!fj){ 
+        printf("\n");
+        printf("\n\tPREZADO USUARIO: O jogador não está na árvore!");
+        return;
+    }
     TABM a;
     fread(&a,sizeof(TABM),1,fj);
     fclose(fj);
@@ -1194,7 +1203,11 @@ void Q12_3(char* arv, int id, int nova_idade){
     char resp[20];
     strcpy(resp,TABM_busca(arv,id));
     FILE* fj = fopen(resp,"rb");
-    if(!fj) exit(1);
+    if(!fj){ 
+        printf("\n");
+        printf("\n\tPREZADO USUARIO: O jogador não está na árvore!");
+        return;
+    }
     TABM a;
     fread(&a,sizeof(TABM),1,fj);
     fclose(fj);
@@ -1224,7 +1237,11 @@ void Q12_4(char* arv, int id, int novas_partidas){
     char resp[20], sele_tmp[20], aux[20];
     strcpy(resp,TABM_busca(arv,id));
     FILE* fj = fopen(resp,"rb");
-    if(!fj) exit(1);
+    if(!fj){ 
+        printf("\n");
+        printf("\n\tPREZADO USUARIO: O jogador não está na árvore!");
+        return;
+    }
     TABM a, b;
     fread(&a,sizeof(TABM),1,fj);
     fclose(fj);
@@ -1250,7 +1267,11 @@ void Q12_5(char* arv, int id, int novos_gols){
     char resp[20], sele_tmp[20], aux[20];
     strcpy(resp,TABM_busca(arv,id));
     FILE* fj = fopen(resp,"rb");
-    if(!fj) exit(1);
+    if(!fj){ 
+        printf("\n");
+        printf("\n\tPREZADO USUARIO: O jogador não está na árvore!");
+        return;
+    }
     TABM a, b;
     fread(&a,sizeof(TABM),1,fj);
     fclose(fj);
@@ -1276,7 +1297,11 @@ void Q12_6(char* arv, int id, char * novo_time){
     char resp[20];
     strcpy(resp,TABM_busca(arv,id));
     FILE* fj = fopen(resp,"rb");
-    if(!fj) exit(1);
+    if(!fj){ 
+        printf("\n");
+        printf("\n\tPREZADO USUARIO: O jogador não está na árvore!");
+        return;
+    }
     TABM a;
     fread(&a,sizeof(TABM),1,fj);
     fclose(fj);
@@ -1309,7 +1334,11 @@ void vira_capitao(char * arv, int id){
     int qtd, tmp, num, ver = 0;
     strcpy(resp,TABM_busca(arv,id));
     FILE* fj = fopen(resp,"rb");
-    if(!fj) exit(1);
+    if(!fj){ 
+        printf("\n");
+        printf("\n\tPREZADO USUARIO: O jogador não está na árvore!");
+        return;
+    }
     TABM a, b;
     fread(&a,sizeof(TABM),1,fj);
     fclose(fj);
@@ -1370,7 +1399,11 @@ void deixa_capitao(char * arv, int id, int t,int ver){
     int qtd, tmp, num, partidas = INT_MIN, id_maior;
     strcpy(resp,TABM_busca(arv,id));
     FILE* fj = fopen(resp,"rb");
-    if(!fj) exit(1);
+    if(!fj){ 
+        printf("\n");
+        printf("\n\tPREZADO USUARIO: O jogador não está na árvore!");
+        return;
+    }
     TABM a, b, jog_maior;
     fread(&a,sizeof(TABM),1,fj);
     fclose(fj);
@@ -1575,6 +1608,7 @@ void Q15_percorre(char* arv, char* lista,int idade){
 }
 
 char* Q15(char* arv,int idade ,int t){
+    char no[20];
     //Criando lista de capitães
     FILE* fl = fopen("Tabelas/idade.bin","wb");
     fclose(fl);
@@ -1584,6 +1618,16 @@ char* Q15(char* arv,int idade ,int t){
     fl = fopen("Tabelas/idade.bin","rb");
     int id_cap;
     while(fread(&id_cap,sizeof(int),1,fl)){
+        strcpy(no,TABM_busca(arv,id_cap));
+        if(strcmp(no,"NULL") != 0){
+            TABM a;
+            FILE* fp = fopen(no,"rb");
+            fread(&a,sizeof(TABM),1,fp);
+            int i;
+            for(i = 0; a.chaves[i].id != id_cap; i++);
+            printf("\n\t%s",a.chaves[i].nome);
+            fclose(fp);
+        }
         deixa_capitao(arv,id_cap,t, 0);
         strcpy(arv,TABM_remover(arv,id_cap,t));
         remove_tabela("Tabelas/Nacionalidades.bin",id_cap);
@@ -1621,6 +1665,7 @@ void Q16_percorre(char* arv, char* lista,char* sele, char* pais){
 }
 
 char* Q16(char* arv,int t,char* sele, char* pais){
+    char no[25];
     //Criando lista de capitães
     FILE* fl = fopen("Tabelas/a.bin","wb");
     fclose(fl);
@@ -1630,6 +1675,16 @@ char* Q16(char* arv,int t,char* sele, char* pais){
     fl = fopen("Tabelas/a.bin","rb");
     int id_cap;
     while(fread(&id_cap,sizeof(int),1,fl)){
+        strcpy(no,TABM_busca(arv,id_cap));
+        if(strcmp(no,"NULL") != 0){
+            TABM a;
+            FILE* fp = fopen(no,"rb");
+            fread(&a,sizeof(TABM),1,fp);
+            int i;
+            for(i = 0; a.chaves[i].id != id_cap; i++);
+            printf("\n\t%s",a.chaves[i].nome);
+            fclose(fp);
+        }
         deixa_capitao(arv,id_cap,t,0);
         strcpy(arv,TABM_remover(arv,id_cap,t));
         remove_tabela("Tabelas/Nacionalidades.bin",id_cap);
@@ -1667,6 +1722,7 @@ void Q17_percorre(char* arv, char* lista){
 }
 
 char* Q17(char* arv,int t){
+    char no[25];
     //Criando lista de capitães
     FILE* fl = fopen("Tabelas/aux.bin","wb");
     fclose(fl);
@@ -1676,6 +1732,16 @@ char* Q17(char* arv,int t){
     fl = fopen("Tabelas/aux.bin","rb");
     int id;
     while(fread(&id,sizeof(int),1,fl)){
+        strcpy(no,TABM_busca(arv,id));
+        if(strcmp(no,"NULL") != 0){
+            TABM a;
+            FILE* fp = fopen(no,"rb");
+            fread(&a,sizeof(TABM),1,fp);
+            int i;
+            for(i = 0; a.chaves[i].id != id; i++);
+            printf("\n\t%s",a.chaves[i].nome);
+            fclose(fp);
+        }
         deixa_capitao(arv,id,t,0);
         strcpy(arv,TABM_remover(arv,id,t));
         remove_tabela("Tabelas/Nacionalidades.bin",id);
@@ -1713,6 +1779,7 @@ void Q18_percorre(char* arv, char* lista){
 }
 
 char* Q18(char* arv,int t){
+    char no[20];
     //Criando lista de capitães
     FILE* fl = fopen("Tabelas/b.bin","wb");
     fclose(fl);
@@ -1722,6 +1789,16 @@ char* Q18(char* arv,int t){
     fl = fopen("Tabelas/b.bin","rb");
     int id;
     while(fread(&id,sizeof(int),1,fl)){
+        strcpy(no,TABM_busca(arv,id));
+        if(strcmp(no,"NULL") != 0){
+            TABM a;
+            FILE* fp = fopen(no,"rb");
+            fread(&a,sizeof(TABM),1,fp);
+            int i;
+            for(i = 0; a.chaves[i].id != id; i++);
+            printf("\n\t%s",a.chaves[i].nome);
+            fclose(fp);
+        }
         deixa_capitao(arv,id,t,0);
         strcpy(arv,TABM_remover(arv,id,t));
         remove_tabela("Tabelas/Nacionalidades.bin",id);
@@ -1759,6 +1836,7 @@ void Q19_percorre(char* arv, char* lista, char * selecao){
 }
 
 char* Q19(char* arv,int t, char * selecao){
+    char no[25];
     //Criando lista de capitães
     FILE* fl = fopen("Tabelas/c.bin","wb");
     fclose(fl);
@@ -1768,6 +1846,16 @@ char* Q19(char* arv,int t, char * selecao){
     fl = fopen("Tabelas/c.bin","rb");
     int id;
     while(fread(&id,sizeof(int),1,fl)){
+        strcpy(no,TABM_busca(arv,id));
+        if(strcmp(no,"NULL") != 0){
+            TABM a;
+            FILE* fp = fopen(no,"rb");
+            fread(&a,sizeof(TABM),1,fp);
+            int i;
+            for(i = 0; a.chaves[i].id != id; i++);
+            printf("\n\t%s",a.chaves[i].nome);
+            fclose(fp);
+        }
         deixa_capitao(arv,id,t,0);
         strcpy(arv,TABM_remover(arv,id,t));
         remove_tabela("Tabelas/Nacionalidades.bin",id);
@@ -1782,6 +1870,7 @@ char* Q20(char* arv,int t){
     //Criando lista de capitães
     FILE* fl = fopen("Tabelas/rem.bin","wb");
     fclose(fl);
+    char no[25];
     int entrada;
     do{
         printf("\tDigite o conjunto de valor e -1 para parar: ");
@@ -1798,6 +1887,16 @@ char* Q20(char* arv,int t){
     fl = fopen("Tabelas/rem.bin","rb");
     int id;
     while(fread(&id,sizeof(int),1,fl)){
+        strcpy(no,TABM_busca(arv,id));
+        if(strcmp(no,"NULL") != 0){
+            TABM a;
+            FILE* fp = fopen(no,"rb");
+            fread(&a,sizeof(TABM),1,fp);
+            int i;
+            for(i = 0; a.chaves[i].id != id; i++);
+            printf("\n\t%s",a.chaves[i].nome);
+            fclose(fp);
+        }
         deixa_capitao(arv,id,t,0);
         strcpy(arv,TABM_remover(arv,id,t));
         remove_tabela("Tabelas/Nacionalidades.bin",id);
