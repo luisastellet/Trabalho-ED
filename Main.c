@@ -231,27 +231,61 @@ int main(void){
             printf("\n");
             break;
         case 15:
-            /* (15) Remoção de jogadores a partir de uma determinada idade; */
+            int idade;
+            printf("\tDigite a idade: ");
+            scanf("%d",&idade);
+            printf("\n\n\t=====================================================================================================");
+            printf("\n\n\tJOGADORES COM MAIS QuE %d ANOS EXCLUÍDOS COM SUCESSO: \n",idade);
+            Q15(raiz,idade,t);
+            printf("\n\n\t=====================================================================================================");
+            printf("\n");
             break;
         case 16:
-            /* (16) Retirada de todos os jogadores de uma seleção que atuam num determinado país; */
+            char paiis[20], sele[20];
+            printf("\tDigite o seleção: ");
+            scanf("%s",sele);
+            scanf("%s",paiis);
+            printf("\n\n\t=====================================================================================================");
+            printf("\n\n\tJOGADORES DO(A) %s QUE JOGAM NO(A) %s EXCLUÍDOS COM SUCESSO: \n",sele,paiis);
+            Q16(raiz,t,sele,paiis);
+            printf("\n\n\t=====================================================================================================");
+            printf("\n");
             break;
         case 17:
-            /* (17) Retirada de todos os os jogadores de uma seleção que não atuam no país de origem; */
+            printf("\n\n\t=====================================================================================================");
+            printf("\n\n\tJOGADORES NÃO ATUAM NO PAÍS DE ORIGEM EXCLUÍDOS COM SUCESSO: \n");
+            Q17(raiz,t);
+            printf("\n\n\t=====================================================================================================");
+            printf("\n");
             break;
         case 18:
-            /* (18) Retirada de todos os os jogadores de uma seleção atuam fora do país de origem; */
+            printf("\n\n\t=====================================================================================================");
+            printf("\n\n\tJOGADORES ATUAM NO PAÍS DE ORIGEM EXCLUÍDOS COM SUCESSO: \n");
+            Q18(raiz,t);
+            printf("\n\n\t=====================================================================================================");
+            printf("\n");
             break;
         case 19:
-            /* (19) Retirada de todos os os jogadores de uma seleção; */
+            char selee[20];
+            printf("\tDigite o seleção: ");
+            scanf("%s",selee);
+            printf("\n\n\t=====================================================================================================");
+            printf("\n\n\tJOGADORES DO(A) %s EXCLUÍDOS COM SUCESSO: \n",selee);
+            Q19(raiz,t,selee);
+            printf("\n\n\t=====================================================================================================");
+            printf("\n");
             break;
         case 20:
-            /* (20) Remoção de jogadores, dado um conjunto contendo suas chaves primárias. */
+            Q20(raiz,t);
+            printf("\n\n\t=====================================================================================================");
+            printf("\n\n\tJOGADORES DO CONJUNTO EXCLUÍDOS COM SUCESSO: \n");
+            printf("\n\n\t=====================================================================================================");
+            printf("\n");
             break;
         case 21:
             printf("\n");
             printf("\t=====================================================================================================");
-            printf("\n\n\t1 - Os jogador mais novo e mais velho\n\n\t2 - OS jogadores que mais e menos atuaram por suas equipes\n\n\t3 - Jogadores que mais e menos atuaram no geral\n\n\t4 - A maior e menor seleção\n\n\t5 - Busca de jogadores que atuam fora do seu país de origem\n\n\t6 - Busca de jogadores que atuam no seu país de origem\n\n\t7 - Busca de jogadores que nasceram no mesmo ano\n\n\t8 - Busca de jogadores que nasceram no mesmo mês\n\n\t9 - Busca das seleções com mais jogadores que atuam fora do seu páis de origem\n\n\t10 - Busca das seleções com mais jogadores que atuam no seu país de origem\n\n\t11 - Dados de um jogador pelo ID\n\n\t12 - Alteração de informações\n\n\t13 - Busca de todos os jogadores de uma seleção\n\n\t14 - Busca e remoção de todos os capitães\n\n\t15 - Remoção de jogadores a partir de uma determinada idade\n\n\t16 - Retirada de todos os jogadores de uma seleção que atuam num determinado país\n\n\t17 - Retirada de todos os os jogadores de uma seleção que não atuam no país de origem\n\n\t18 - Retirada de todos os os jogadores de uma seleção atuam fora do país de origem\n\n\t19 - Retirada de todos os os jogadores de uma seleção\n\n\t20 - Remoção de jogadores, dado um conjunto contendo suas chaves primárias.");
+            printf("\n\n\t1 - Os jogador mais novo e mais velho\n\n\t2 - OS jogadores que mais e menos atuaram por suas equipes\n\n\t3 - Jogadores que mais e menos atuaram no geral\n\n\t4 - A maior e menor seleção\n\n\t5 - Busca de jogadores que atuam fora do seu país de origem\n\n\t6 - Busca de jogadores que atuam no seu país de origem\n\n\t7 - Busca de jogadores que nasceram no mesmo ano\n\n\t8 - Busca de jogadores que nasceram no mesmo mês\n\n\t9 - Busca das seleções com mais jogadores que atuam fora do seu páis de origem\n\n\t10 - Busca das seleções com mais jogadores que atuam no seu país de origem\n\n\t11 - Dados de um jogador pelo ID\n\n\t12 - Alteração de informações\n\n\t13 - Busca de todos os jogadores de uma seleção\n\n\t14 - Busca e remoção de todos os capitães\n\n\t15 - Remoção de jogadores a partir de uma determinada idade\n\n\t16 - Retirada de todos os jogadores de uma seleção que atuam num determinado país\n\n\t17 - Retirada de todos os os jogadores de uma seleção que não atuam no país de origem\n\n\t18 - Retirada de todos os os jogadores de uma seleção atuam no país de origem\n\n\t19 - Retirada de todos os os jogadores de uma seleção\n\n\t20 - Remoção de jogadores, dado um conjunto contendo suas chaves primárias.");
             printf("\n\n");
             printf("\t=====================================================================================================");
             break;

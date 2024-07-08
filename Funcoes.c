@@ -940,7 +940,7 @@ void deixa_capitao(char * arv, int id, int t){
     for(i = 0; a.chaves[i].id != id; i++);
     
     if(!a.chaves[i].capitao){
-        printf("\n\n\tPREZADO USUARIO: O %s nao eh capitao!",a.chaves[i].nome);
+        //printf("\n\n\tPREZADO USUARIO: O %s nao eh capitao!",a.chaves[i].nome);
         return;
     }
     a.chaves[i].capitao = 0;
@@ -986,9 +986,9 @@ void deixa_capitao(char * arv, int id, int t){
     fj = fopen(arq_maior,"wb");
     fwrite(&jog_maior,sizeof(TABM),1,fj);
     fclose(fj);
-    printf("\n");
-    printf("\n\tAlterado com sucesso!");
-    printf("\n\t%s eh o novo capitao do(a) %s",jog_maior.chaves[j].nome, jog_maior.chaves[j].sele);
+    //printf("\n");
+    //printf("\n\tAlterado com sucesso!");
+    //printf("\n\t%s eh o novo capitao do(a) %s",jog_maior.chaves[j].nome, jog_maior.chaves[j].sele);
     return;
 }
 
@@ -1001,6 +1001,9 @@ void Q12_7(char* arv, int id, int op, int t){
     return;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (13) Busca de todos os jogadores de uma seleção;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Q13(char* arv, char*pais, char* tabela){
     FILE * fp = fopen(tabela, "rb");
     if(!fp) exit(1);
@@ -1035,6 +1038,9 @@ void Q13(char* arv, char*pais, char* tabela){
     return;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (14) Busca e remoção de todos os capitães;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Q14_B(char* arv){
     FILE* fp  = fopen(arv,"rb");
     if(fp){
@@ -1097,3 +1103,260 @@ char* Q14_R(char* arv, int t){
     return arv;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (15) Remoção de jogadores a partir de uma determinada idade;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Q15_percorre(char* arv, char* lista,int idade){
+    FILE* fp  = fopen(arv,"rb");
+    if(fp){
+        TABM a;
+        fread(&a,sizeof(TABM),1,fp);
+        fclose(fp);
+        if(!a.folha){
+            Q15_percorre(a.filhos[0],lista,idade);
+        }
+        if(a.folha){
+            for(int i = 0; i < a.nchaves; i++){
+                if(a.chaves[i].idade >= idade){
+                    FILE* fs = fopen(lista,"ab");
+                    fwrite(&a.chaves[i].id,sizeof(int),1,fs);
+                    fclose(fs);
+                }
+            }
+            Q15_percorre(a.prox,lista,idade);
+        }
+    }
+    return;
+}
+
+char* Q15(char* arv,int idade ,int t){
+    //Criando lista de capitães
+    FILE* fl = fopen("Tabelas/idade.bin","wb");
+    fclose(fl);
+    Q15_percorre(arv,"Tabelas/idade.bin",idade);
+
+    //Com a tabela criada, basta percorrer ir retirando, e buscar os id para colocar -1 na tabela de nacionalidade(não vi necessidade de mudar o de posições)
+    fl = fopen("Tabelas/idade.bin","rb");
+    int id_cap;
+    while(fread(&id_cap,sizeof(int),1,fl)){
+        //deixa_capitao(arv,id_cap,t);
+        strcpy(arv,TABM_remover(arv,id_cap,t));
+        remove_tabela("Tabelas/Nacionalidades.bin",id_cap);
+    }
+    remove("Tabelas/idade.bin");
+    fclose(fl);
+
+    return arv;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (16) Retirada de todos os jogadores de uma seleção que atuam num determinado país;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Q16_percorre(char* arv, char* lista,char* sele, char* pais){
+    FILE* fp  = fopen(arv,"rb");
+    if(fp){
+        TABM a;
+        fread(&a,sizeof(TABM),1,fp);
+        fclose(fp);
+        if(!a.folha){
+            Q16_percorre(a.filhos[0],lista,sele,pais);
+        }
+        if(a.folha){
+            for(int i = 0; i < a.nchaves; i++){
+                if((strcmp(a.chaves[i].sele,sele) == 0) &&(strcmp(a.chaves[i].pais_time,pais) == 0)){
+                    FILE* fs = fopen(lista,"ab");
+                    fwrite(&a.chaves[i].id,sizeof(int),1,fs);
+                    fclose(fs);
+                }
+            }
+            Q16_percorre(a.prox,lista,sele,pais);
+        }
+    }
+    return;
+}
+
+char* Q16(char* arv,int t,char* sele, char* pais){
+    //Criando lista de capitães
+    FILE* fl = fopen("Tabelas/a.bin","wb");
+    fclose(fl);
+    Q16_percorre(arv,"Tabelas/a.bin",sele,pais);
+
+    //Com a tabela criada, basta percorrer ir retirando, e buscar os id para colocar -1 na tabela de nacionalidade(não vi necessidade de mudar o de posições)
+    fl = fopen("Tabelas/a.bin","rb");
+    int id_cap;
+    while(fread(&id_cap,sizeof(int),1,fl)){
+        //deixa_capitao(arv,id_cap,t);
+        strcpy(arv,TABM_remover(arv,id_cap,t));
+        remove_tabela("Tabelas/Nacionalidades.bin",id_cap);
+    }
+    remove("Tabelas/a.bin");
+    fclose(fl);
+
+    return arv;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (17) Retirada de todos os os jogadores de uma seleção que não atuam no país de origem;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Q17_percorre(char* arv, char* lista){
+    FILE* fp  = fopen(arv,"rb");
+    if(fp){
+        TABM a;
+        fread(&a,sizeof(TABM),1,fp);
+        fclose(fp);
+        if(!a.folha){
+            Q17_percorre(a.filhos[0],lista);
+        }
+        if(a.folha){
+            for(int i = 0; i < a.nchaves; i++){
+                if(strcmp(a.chaves[i].sele, a.chaves[i].pais_time)){ //forem diferentes
+                    FILE* fs = fopen(lista,"ab");
+                    fwrite(&a.chaves[i].id,sizeof(int),1,fs);
+                    fclose(fs);
+                }
+            }
+            Q17_percorre(a.prox,lista);
+        }
+    }
+    return;
+}
+
+char* Q17(char* arv,int t){
+    //Criando lista de capitães
+    FILE* fl = fopen("Tabelas/aux.bin","wb");
+    fclose(fl);
+    Q17_percorre(arv,"Tabelas/aux.bin");
+
+    //Com a tabela criada, basta percorrer ir retirando, e buscar os id para colocar -1 na tabela de nacionalidade(não vi necessidade de mudar o de posições)
+    fl = fopen("Tabelas/aux.bin","rb");
+    int id;
+    while(fread(&id,sizeof(int),1,fl)){
+        //deixa_capitao(arv,id,t);
+        strcpy(arv,TABM_remover(arv,id,t));
+        remove_tabela("Tabelas/Nacionalidades.bin",id);
+    }
+    remove("Tabelas/aux.bin");
+    fclose(fl);
+
+    return arv;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (18) Retirada de todos os os jogadores de uma seleção que atuam no país de origem;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Q18_percorre(char* arv, char* lista){
+    FILE* fp  = fopen(arv,"rb");
+    if(fp){
+        TABM a;
+        fread(&a,sizeof(TABM),1,fp);
+        fclose(fp);
+        if(!a.folha){
+            Q18_percorre(a.filhos[0],lista);
+        }
+        if(a.folha){
+            for(int i = 0; i < a.nchaves; i++){
+                if(strcmp(a.chaves[i].sele, a.chaves[i].pais_time) == 0){ //forem iguais
+                    FILE* fs = fopen(lista,"ab");
+                    fwrite(&a.chaves[i].id,sizeof(int),1,fs);
+                    fclose(fs);
+                }
+            }
+            Q18_percorre(a.prox,lista);
+        }
+    }
+    return;
+}
+
+char* Q18(char* arv,int t){
+    //Criando lista de capitães
+    FILE* fl = fopen("Tabelas/b.bin","wb");
+    fclose(fl);
+    Q18_percorre(arv,"Tabelas/b.bin");
+
+    //Com a tabela criada, basta percorrer ir retirando, e buscar os id para colocar -1 na tabela de nacionalidade(não vi necessidade de mudar o de posições)
+    fl = fopen("Tabelas/b.bin","rb");
+    int id;
+    while(fread(&id,sizeof(int),1,fl)){
+        strcpy(arv,TABM_remover(arv,id,t));
+        remove_tabela("Tabelas/Nacionalidades.bin",id);
+    }
+    remove("Tabelas/b.bin");
+    fclose(fl);
+
+    return arv;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (19) Retirada de todos os os jogadores de uma seleção;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Q19_percorre(char* arv, char* lista, char * selecao){
+    FILE* fp  = fopen(arv,"rb");
+    if(fp){
+        TABM a;
+        fread(&a,sizeof(TABM),1,fp);
+        fclose(fp);
+        if(!a.folha){
+            Q19_percorre(a.filhos[0],lista, selecao);
+        }
+        if(a.folha){
+            for(int i = 0; i < a.nchaves; i++){
+                if(strcmp(a.chaves[i].sele, selecao) == 0){ //forem iguais
+                    FILE* fs = fopen(lista,"ab");
+                    fwrite(&a.chaves[i].id,sizeof(int),1,fs);
+                    fclose(fs);
+                }
+            }
+            Q19_percorre(a.prox,lista, selecao);
+        }
+    }
+    return;
+}
+
+char* Q19(char* arv,int t, char * selecao){
+    //Criando lista de capitães
+    FILE* fl = fopen("Tabelas/c.bin","wb");
+    fclose(fl);
+    Q19_percorre(arv,"Tabelas/c.bin", selecao);
+
+    //Com a tabela criada, basta percorrer ir retirando, e buscar os id para colocar -1 na tabela de nacionalidade(não vi necessidade de mudar o de posições)
+    fl = fopen("Tabelas/c.bin","rb");
+    int id;
+    while(fread(&id,sizeof(int),1,fl)){
+        strcpy(arv,TABM_remover(arv,id,t));
+        remove_tabela("Tabelas/Nacionalidades.bin",id);
+    }
+    remove("Tabelas/c.bin");
+    fclose(fl);
+
+    return arv;
+}
+
+char* Q20(char* arv,int t){
+    //Criando lista de capitães
+    FILE* fl = fopen("Tabelas/rem.bin","wb");
+    fclose(fl);
+    int entrada;
+    do{
+        printf("\tDigite o conjunto de valor e -1 para parar: ");
+        scanf("%d",&entrada);
+        if(entrada < 0) break;
+        fl = fopen("Tabelas/rem.bin","ab");
+        if(!fl) exit(1);
+        fwrite(&entrada,sizeof(int),1,fl);
+        fclose(fl);
+        
+    }while(1);
+
+    //Com a tabela criada, basta percorrer ir retirando, e buscar os id para colocar -1 na tabela de nacionalidade(não vi necessidade de mudar o de posições)
+    fl = fopen("Tabelas/rem.bin","rb");
+    int id;
+    while(fread(&id,sizeof(int),1,fl)){
+        deixa_capitao(arv,id,t);
+        strcpy(arv,TABM_remover(arv,id,t));
+        remove_tabela("Tabelas/Nacionalidades.bin",id);
+    }
+    remove("Tabelas/rem.bin");
+    fclose(fl);
+
+    return arv;
+}
