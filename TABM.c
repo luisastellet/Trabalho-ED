@@ -12,8 +12,8 @@
 char* TABM_busca(char* arq, int id){
     if(id == -1) return "NULL";
     FILE* fp = fopen(arq,"rb");
-    //if(!fp) return "NULL";
-    if(!fp) exit(1);
+    if(!fp) return "NULL";
+    //if(!fp) exit(1);
     TABM a;
     fread(&a,sizeof(TABM),1,fp);
     fclose(fp);
@@ -226,6 +226,25 @@ char* TABM_insere(TJ *jogador, int t, char ** raiz, int * cont){
         fwrite(&aux, sizeof(TABM), 1, fraiz);
         TABM_libera_no(T);
         fclose(fraiz);
+        return *raiz;
+    }
+    
+    //Verificando se o id já está na árvore e alterar os dados baseado no id.
+    char ver[20];
+    strcpy(ver,TABM_busca(*raiz,jogador->id));
+    if(strcmp(ver,"NULL") != 0){
+        FILE* fd = fopen(ver,"rb");
+        TABM a;
+        fread(&a,sizeof(TABM),1,fd);
+        fclose(fd);
+
+        int i;
+        for(i = 0; a.chaves[i].id != jogador->id; i++);
+        a.chaves[i] = copia_chaves(a.chaves[i],*jogador);
+
+        fd = fopen(ver,"wb");
+        fwrite(&a,sizeof(TABM),1,fd);
+        fclose(fd);
         return *raiz;
     }
     

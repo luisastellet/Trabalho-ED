@@ -1,5 +1,6 @@
 #include "TABM.c"
 #include <limits.h>
+
 void remove_tabela(char* tabela, int id){
     FILE* fp = fopen(tabela,"rb+");
     if(!fp) exit(1);
@@ -24,9 +25,27 @@ void remove_tabela(char* tabela, int id){
     return;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//          (2) Os jogadores que mais e menos atuaram em suas equipes; 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (1.1) Retorno do jogador mais novo e mais velho da competição geral;
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+int month2num(char* mes){
+    if(!strcmp(mes,"January")) return 1;
+    if(!strcmp(mes,"February")) return 2;
+    if(!strcmp(mes,"March")) return 3;
+    if(!strcmp(mes,"April")) return 4;
+    if(!strcmp(mes,"May")) return 5;
+    if(!strcmp(mes,"June")) return 6;
+    if(!strcmp(mes,"July")) return 7;
+    if(!strcmp(mes,"August")) return 8;
+    if(!strcmp(mes,"September")) return 9;
+    if(!strcmp(mes,"October")) return 10;
+    if(!strcmp(mes,"November")) return 11;
+    if(!strcmp(mes,"December")) return 12;
+    if(!strcmp(mes,"MIN")) return INT_MIN;
+    if(!strcmp(mes,"MAX")) return INT_MAX;
+}
+
 int compara_TJ(const void* a, const void* b){
     TJ* pa = (TJ*)a;
     TJ* pb = (TJ*)b;
@@ -34,8 +53,421 @@ int compara_TJ(const void* a, const void* b){
     return strcmp((pa)->nome,(pb)->nome);
 }
 
+void Q1_geral_percorre(char*arv,TJ* jogadorV, TJ* jogadorN,int* contV,int* contN){
+    FILE* fp = fopen(arv,"rb");
+    if(fp){
+        TABM no;
+        fread(&no,sizeof(TABM),1,fp);
+        if(!no.folha){
+            Q1_geral_percorre(no.filhos[0],jogadorV,jogadorN,contV,contN);
+        }
+        if(no.folha){
+            for(int i = 0; i < no.nchaves; i++){
+                if((no.chaves[i].ano == jogadorV->ano) && (no.chaves[i].dia == jogadorV->dia) && strcmp(no.chaves[i].mes,jogadorV->mes) == 0) (*contV)++;
+                else{
+                    if(no.chaves[i].ano < jogadorV->ano) {
+                        *jogadorV = copia_chaves(*jogadorV,no.chaves[i]);
+                        (*contV) = 1;
+                    } 
+                    if(no.chaves[i].ano == jogadorV->ano){
+                        if(month2num(no.chaves[i].mes) < month2num(jogadorV->mes)) {
+                            *jogadorV = copia_chaves(*jogadorV,no.chaves[i]); 
+                            (*contV) = 1;
+                        } 
+                        if(month2num(no.chaves[i].mes) == month2num(jogadorV->mes)){
+                            if(no.chaves[i].dia < jogadorV->dia) {
+                                *jogadorV = copia_chaves(*jogadorV,no.chaves[i]); 
+                                (*contV) = 1;
+                            } 
+                        }
+                    }
+                }
+                if((no.chaves[i].ano == jogadorN->ano) && (no.chaves[i].dia == jogadorN->dia) && strcmp(no.chaves[i].mes,jogadorN->mes) == 0) (*contN)++;
+                else{
+                    if(no.chaves[i].ano > jogadorN->ano) {
+                        *jogadorN = copia_chaves(*jogadorN,no.chaves[i]);
+                        (*contN) = 1;
+                        } 
+                    if(no.chaves[i].ano == jogadorN->ano){
+                        if(month2num(no.chaves[i].mes) > month2num(jogadorN->mes)) {
+                            *jogadorN = copia_chaves(*jogadorN,no.chaves[i]);
+                            (*contN) = 1;
+                        } 
+                        if(month2num(no.chaves[i].mes) == month2num(jogadorN->mes)){
+                            if(no.chaves[i].dia > jogadorN->dia) {
+                                *jogadorN = copia_chaves(*jogadorN,no.chaves[i]);
+                                (*contN) = 1;
+                            } 
+                        }
+                    }
+                }
+            }
+            Q1_geral_percorre(no.prox,jogadorV,jogadorN,contV,contN);
+        }
+    }
+    return;
+}
+
+void Q1_geral_preenche(char * arv, TJ jogadorV, TJ jogadorN, int * indiceV, int * indiceN, TJ * vetV, TJ * vetN,int contV, int contN){
+    FILE* fp = fopen(arv,"rb");
+    if(fp){
+        TABM no;
+        fread(&no,sizeof(TABM),1,fp);
+        if(!no.folha){
+            Q1_geral_preenche(no.filhos[0], jogadorV, jogadorN, indiceV, indiceN, vetV, vetN,contV,contN);
+        }
+        if(no.folha){
+            for(int i = 0; i < no.nchaves; i++){
+                if((contV > 1) && (no.chaves[i].ano == jogadorV.ano) && (no.chaves[i].dia == jogadorV.dia) && strcmp(no.chaves[i].mes,jogadorV.mes) == 0){
+                    vetV[(*indiceV)] = copia_chaves(vetV[(*indiceV)],no.chaves[i]);
+                    (*indiceV)++;
+                }
+                if((contN > 1) && (no.chaves[i].ano == jogadorN.ano) && (strcmp(no.chaves[i].mes,jogadorN.mes) == 0) && (no.chaves[i].dia == jogadorN.dia)){
+                    vetN[(*indiceN)] = copia_chaves(vetN[(*indiceN)],no.chaves[i]);
+                    (*indiceN)++;
+                }
+            }
+            Q1_geral_preenche(no.prox, jogadorV, jogadorN, indiceV, indiceN, vetV, vetN,contV,contN);
+        }
+    }
+    return;
+}
+
+void Q1_geral(char* arv){
+    FILE* fp = fopen(arv,"rb");
+    if(!fp){
+        printf("\n\n\tPREZADO USUARIO: Todos os jogadores foram excluidos!");
+        return;
+    }
+    TJ velho, novo, *vetV, *vetN; int contV = 0, contN = 0;
+    velho.dia = INT_MAX;
+    strcpy(velho.mes, "MAX");
+    velho.ano = INT_MAX;
+    novo.dia = INT_MIN;
+    strcpy(novo.mes, "MIN");
+    novo.ano = INT_MIN;
+    Q1_geral_percorre(arv,&velho, &novo, &contV, &contN);
+
+    if(contV == 1) printf("\n\tMAIS VELHO DA COMPETIÇÃO: %s (%s) NASCIDO EM %d/%d/%d: \n",velho.nome,velho.sele,velho.dia,month2num(velho.mes),velho.ano);
+    if(contN == 1) printf("\n\tMAIS NOVO DA COMPETIÇÃO: %s (%s): NASCIDO EM %d/%d/%d: \n",novo.nome,novo.sele,novo.dia,month2num(novo.mes),novo.ano);
+
+    int indiceV = 0;
+    int indiceN = 0;
+    if(contV > 1 || contN > 1){
+        if(contV > 1) vetV = (TJ*)malloc(sizeof(TJ)*contV);
+        if(contN > 1) vetN = (TJ*)malloc(sizeof(TJ)*contN);
+
+        Q1_geral_preenche(arv, velho, novo, &indiceV, &indiceN, vetV, vetN, contV, contN);
+        
+    }
+
+    if(contV > 1)qsort(vetV, contV, sizeof(TJ), compara_TJ);
+    if(contN > 1)qsort(vetN, contN, sizeof(TJ), compara_TJ);
+
+    if(contV > 1){
+        printf("\n\tJOGADORES MAIS VELHOS EMPATADOS NA DATA %d/%d/%d: ", velho.dia,month2num(velho.mes),velho.ano);
+        for(int i=0; i<contV; i++) printf("\n\t%s (%s)",vetV[i].nome,vetV[i].sele);
+        free(vetV);
+    }
+    
+    if(contN > 1){
+        printf("\n\tJOGADORES MAIS NOVOS EMPATADOS NA DATA %d/%d/%d: ", novo.dia,month2num(novo.mes),novo.ano);
+        for(int i=0; i<contN; i++) printf("\n\t%s (%s)",vetN[i].nome, vetN[i].sele);
+        free(vetN);
+    }
+    printf("\n");
+    
+    return;
+
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (1.2) Retorno do jogador mais novo e mais velho de cada seleção;
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Q1_nacionalidade(char* tabela, char * arv){
+    FILE * fp = fopen(tabela, "rb");
+    if(!fp) return ;
+    int qtd, num, contV, contN, tmp, indiceV, indiceN;
+    long pos;
+    char sele[21], aux[25];
+    TJ jogadorV, jogadorN, *vetV, *vetN;
+    TABM no;
+    jogadorV.dia = INT_MAX;
+    strcpy(jogadorV.mes, "MAX");
+    jogadorV.ano = INT_MAX;
+    jogadorN.dia = INT_MIN;
+    strcpy(jogadorN.mes, "MIN");
+    jogadorN.ano = INT_MIN;
+
+    while(fread(&sele, sizeof(char)*20, 1, fp) == 1){
+        contV = 0;
+        contN = 0;
+        pos = ftell(fp); //posição antes de ler a qtd da seleção
+        fread(&qtd, sizeof(int), 1, fp);
+        tmp = 0;
+        printf("\n\t%s: ",sele);
+        while(tmp != qtd && fread(&num, sizeof(int), 1, fp) == 1){
+            strcpy(aux,TABM_busca(arv,num));
+            if(strcmp(aux,"NULL") != 0){
+                FILE* fj = fopen(aux,"rb");
+                if(!fj) exit(1);
+                fread(&no,sizeof(TABM),1,fj);
+                fclose(fj);
+
+                int i;
+                for(i = 0; no.chaves[i].id != num; i++);//achei o jogador
+                if((no.chaves[i].ano == jogadorV.ano) && (no.chaves[i].dia == jogadorV.dia) && strcmp(no.chaves[i].mes,jogadorV.mes) == 0) contV++;
+                else{
+                    if(no.chaves[i].ano < jogadorV.ano) {
+                        jogadorV = copia_chaves(jogadorV,no.chaves[i]);
+                        contV = 1;
+                    } 
+                    if(no.chaves[i].ano == jogadorV.ano){
+                        if(month2num(no.chaves[i].mes) < month2num(jogadorV.mes)) {
+                            jogadorV = copia_chaves(jogadorV,no.chaves[i]); 
+                            contV = 1;
+                        } 
+                        if(month2num(no.chaves[i].mes) == month2num(jogadorV.mes)){
+                            if(no.chaves[i].dia < jogadorV.dia) {
+                                jogadorV = copia_chaves(jogadorV,no.chaves[i]); 
+                                contV = 1;
+                            } 
+                        }
+                    }
+                }
+                if((no.chaves[i].ano == jogadorN.ano) && (no.chaves[i].dia == jogadorN.dia) && strcmp(no.chaves[i].mes,jogadorN.mes) == 0) contN++;
+                else{
+                    if(no.chaves[i].ano > jogadorN.ano) {
+                        jogadorN = copia_chaves(jogadorN,no.chaves[i]);
+                        contN = 1;
+                        } 
+                    if(no.chaves[i].ano == jogadorN.ano){
+                        if(month2num(no.chaves[i].mes) > month2num(jogadorN.mes)) {
+                            jogadorN = copia_chaves(jogadorN,no.chaves[i]);
+                            contN = 1;
+                        } 
+                        if(month2num(no.chaves[i].mes) == month2num(jogadorN.mes)){
+                            if(no.chaves[i].dia > jogadorN.dia) {
+                                jogadorN = copia_chaves(jogadorN,no.chaves[i]);
+                                contN = 1;
+                            } 
+                        }
+                    }
+                }
+            }
+            tmp++;
+        }
+        //acabei uma seleção
+        if(contV == 1) printf("\n\tMAIS VELHO: %s  NASCIDO EM %d/%d/%d: \n",jogadorV.nome,jogadorV.dia,month2num(jogadorV.mes),jogadorV.ano);
+        if(contN == 1) printf("\n\tMAIS NOVO: %s  NASCIDO EM %d/%d/%d: \n",jogadorN.nome,jogadorN.dia,month2num(jogadorN.mes),jogadorN.ano);
+        
+        indiceV = 0;
+        indiceN = 0;
+        if(contV > 1 || contN > 1){
+            if(contV > 1) vetV = (TJ*)malloc(sizeof(TJ)*contV);
+            if(contN > 1) vetN = (TJ*)malloc(sizeof(TJ)*contN);
+            fseek(fp, pos, SEEK_SET);
+            fread(&qtd, sizeof(int), 1, fp);
+            tmp = 0;
+            while(tmp != qtd && fread(&num, sizeof(int), 1, fp) == 1){
+                strcpy(aux,TABM_busca(arv,num));
+                if(strcmp(aux,"NULL") != 0){
+                    FILE* fj = fopen(aux,"rb");
+                    if(!fj) exit(1);
+                    fread(&no,sizeof(TABM),1,fj);
+                    fclose(fj);
+
+                    int i;
+                    for(i = 0; no.chaves[i].id != num; i++);//achei o jogador
+                    if((contV > 1) && (no.chaves[i].ano == jogadorV.ano) && (no.chaves[i].dia == jogadorV.dia) && strcmp(no.chaves[i].mes,jogadorV.mes) == 0){
+                        vetV[indiceV] = copia_chaves(vetV[indiceV],no.chaves[i]);
+                        indiceV++;
+                    }
+                    if((contN > 1) && (no.chaves[i].ano == jogadorN.ano) && (strcmp(no.chaves[i].mes,jogadorN.mes) == 0) && (no.chaves[i].dia == jogadorN.dia)){
+                        vetN[indiceN] = copia_chaves(vetN[indiceN],no.chaves[i]);
+                        indiceN++;
+                    }
+                }
+                tmp++;
+            }
+        }
+
+        if(contV > 1)qsort(vetV, contV, sizeof(TJ), compara_TJ);
+        if(contN > 1)qsort(vetN, contN, sizeof(TJ), compara_TJ);
+
+        if(contV > 1){
+            printf("\n\tJOGADORES MAIS VELHOS EMPATADOS NA DATA %d/%d/%d: ", jogadorV.dia, month2num(jogadorV.mes),jogadorV.ano);
+            for(int i=0; i<contV; i++) printf("\n\t%s (%s)",vetV[i].nome,vetV[i].sele);
+            printf("\n");
+            free(vetV);
+        }
+
+        if(contN > 1){
+            printf("\n\tJOGADORES MAIS NOVOS EMPATADOS NA DATA %d/%d/%d: ", jogadorN.dia, month2num(jogadorN.mes),jogadorN.ano);
+            for(int i=0; i<contN; i++) printf("\n\t%s (%s)",vetN[i].nome, vetN[i].sele);
+            printf("\n");
+            free(vetN);
+        }
+        printf("\n");
+    
+        jogadorV.dia = INT_MAX;
+        strcpy(jogadorV.mes, "MAX");
+        jogadorV.ano = INT_MAX;
+        jogadorN.dia = INT_MIN;
+        strcpy(jogadorN.mes, "MIN");
+        jogadorN.ano = INT_MIN;
+        printf("\n");
+    }
+    return;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (1.3) Retorno do jogador mais novo e mais velho de cada posição;
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Q1_posicao(char* tabela, char * arv){
+    FILE * fp = fopen(tabela, "rb");
+    if(!fp) return ;
+    int qtd, num, contV, contN, tmp, indiceV, indiceN;
+    long pos;
+    char posicao[5], aux[25];
+    TJ jogadorV, jogadorN, *vetV, *vetN;
+    TABM no;
+    jogadorV.dia = INT_MAX;
+    strcpy(jogadorV.mes, "MAX");
+    jogadorV.ano = INT_MAX;
+    jogadorN.dia = INT_MIN;
+    strcpy(jogadorN.mes, "MIN");
+    jogadorN.ano = INT_MIN;
+
+    while(fread(&posicao, sizeof(char)*5, 1, fp) == 1){
+        contV = 0;
+        contN = 0;
+        pos = ftell(fp); //posição antes de ler a qtd da seleção
+        fread(&qtd, sizeof(int), 1, fp);
+        tmp = 0;
+        printf("\n\t%s: ",posicao);
+        while(tmp != qtd && fread(&num, sizeof(int), 1, fp) == 1){
+            strcpy(aux,TABM_busca(arv,num));
+            if(strcmp(aux,"NULL") != 0){
+                FILE* fj = fopen(aux,"rb");
+                if(!fj) exit(1);
+                fread(&no,sizeof(TABM),1,fj);
+                fclose(fj);
+
+                int i;
+                for(i = 0; no.chaves[i].id != num; i++);//achei o jogador
+                if((no.chaves[i].ano == jogadorV.ano) && (no.chaves[i].dia == jogadorV.dia) && strcmp(no.chaves[i].mes,jogadorV.mes) == 0) contV++;
+                else{
+                    if(no.chaves[i].ano < jogadorV.ano) {
+                        jogadorV = copia_chaves(jogadorV,no.chaves[i]);
+                        contV = 1;
+                    } 
+                    if(no.chaves[i].ano == jogadorV.ano){
+                        if(month2num(no.chaves[i].mes) < month2num(jogadorV.mes)) {
+                            jogadorV = copia_chaves(jogadorV,no.chaves[i]); 
+                            contV = 1;
+                        } 
+                        if(month2num(no.chaves[i].mes) == month2num(jogadorV.mes)){
+                            if(no.chaves[i].dia < jogadorV.dia) {
+                                jogadorV = copia_chaves(jogadorV,no.chaves[i]); 
+                                contV = 1;
+                            } 
+                        }
+                    }
+                }
+                if((no.chaves[i].ano == jogadorN.ano) && (no.chaves[i].dia == jogadorN.dia) && strcmp(no.chaves[i].mes,jogadorN.mes) == 0) contN++;
+                else{
+                    if(no.chaves[i].ano > jogadorN.ano) {
+                        jogadorN = copia_chaves(jogadorN,no.chaves[i]);
+                        contN = 1;
+                        } 
+                    if(no.chaves[i].ano == jogadorN.ano){
+                        if(month2num(no.chaves[i].mes) > month2num(jogadorN.mes)) {
+                            jogadorN = copia_chaves(jogadorN,no.chaves[i]);
+                            contN = 1;
+                        } 
+                        if(month2num(no.chaves[i].mes) == month2num(jogadorN.mes)){
+                            if(no.chaves[i].dia > jogadorN.dia) {
+                                jogadorN = copia_chaves(jogadorN,no.chaves[i]);
+                                contN = 1;
+                            } 
+                        }
+                    }
+                }
+            }
+            tmp++;
+        }
+        //acabei uma posição
+        if(contV == 1) printf("\n\tMAIS VELHO: %s NASCIDO EM %d/%d/%d \n",jogadorV.nome,jogadorV.dia,month2num(jogadorV.mes),jogadorV.ano);
+        if(contN == 1) printf("\n\tMAIS NOVO: %s NASCIDO EM %d/%d/%d \n",jogadorN.nome,jogadorN.dia,month2num(jogadorN.mes),jogadorN.ano);
+        
+        indiceV = 0;
+        indiceN = 0;
+        if(contV > 1 || contN > 1){
+            if(contV > 1) vetV = (TJ*)malloc(sizeof(TJ)*contV);
+            if(contN > 1) vetN = (TJ*)malloc(sizeof(TJ)*contN);
+            fseek(fp, pos, SEEK_SET);
+            fread(&qtd, sizeof(int), 1, fp);
+            tmp = 0;
+            while(tmp != qtd && fread(&num, sizeof(int), 1, fp) == 1){
+                strcpy(aux,TABM_busca(arv,num));
+                if(strcmp(aux,"NULL") != 0){
+                    FILE* fj = fopen(aux,"rb");
+                    if(!fj) exit(1);
+                    fread(&no,sizeof(TABM),1,fj);
+                    fclose(fj);
+
+                    int i;
+                    for(i = 0; no.chaves[i].id != num; i++);//achei o jogador
+                    if((contV > 1) && (no.chaves[i].ano == jogadorV.ano) && (no.chaves[i].dia == jogadorV.dia) && strcmp(no.chaves[i].mes,jogadorV.mes) == 0){
+                        vetV[indiceV] = copia_chaves(vetV[indiceV],no.chaves[i]);
+                        indiceV++;
+                    }
+                    if((contN > 1) && (no.chaves[i].ano == jogadorN.ano) && (strcmp(no.chaves[i].mes,jogadorN.mes) == 0) && (no.chaves[i].dia == jogadorN.dia)){
+                        vetN[indiceN] = copia_chaves(vetN[indiceN],no.chaves[i]);
+                        indiceN++;
+                    }
+                }
+                tmp++;
+            }
+        }
+
+        if(contV > 1)qsort(vetV, contV, sizeof(TJ), compara_TJ);
+        if(contN > 1)qsort(vetN, contN, sizeof(TJ), compara_TJ);
+
+        if(contV > 1){
+            printf("\n\tJOGADORES MAIS VELHOS EMPATADOS NA DATA %d/%d/%d: ", jogadorV.dia, month2num(jogadorV.mes),jogadorV.ano);
+            for(int i=0; i<contV; i++) printf("\n\t%s (%s)",vetV[i].nome,vetV[i].sele);
+            printf("\n");
+            free(vetV);
+        }
+
+        if(contN > 1){
+            printf("\n\tJOGADORES MAIS NOVOS EMPATADOS NA DATA %d/%d/%d: ", jogadorN.dia, month2num(jogadorN.mes),jogadorN.ano);
+            for(int i=0; i<contN; i++) printf("\n\t%s (%s)",vetN[i].nome, vetN[i].sele);
+            printf("\n");
+            free(vetN);
+        }
+        printf("\n");
+    
+        jogadorV.dia = INT_MAX;
+        strcpy(jogadorV.mes, "MAX");
+        jogadorV.ano = INT_MAX;
+        jogadorN.dia = INT_MIN;
+        strcpy(jogadorN.mes, "MIN");
+        jogadorN.ano = INT_MIN;
+        printf("\n");
+    }
+    return;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//          (2) Os jogadores que mais e menos atuaram em suas equipes; 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Q2(char* tabela, char * arv){
     FILE * fp = fopen(tabela, "rb");
+    if(!fp) return ;
     int qtd, num, contM, contm, tmp, indiceM, indicem;
     long pos;
     char sele[21], aux[25];
@@ -114,12 +546,12 @@ void Q2(char* tabela, char * arv){
         if(contm > 1)qsort(vetm, contm, sizeof(TJ), compara_TJ);
 
         if(contM > 1){
-            printf("\n\tJogadores que mais atuaram no(a) %s em ordem alfabetica com %d partidas: ", jogadorM.sele, jogadorM.part_sel);
+            printf("\n\tJogadores que mais atuaram no(a) %s em ordem alfabética com %d partidas: ", jogadorM.sele, jogadorM.part_sel);
             for(int i=0; i<contM; i++) printf("\n\t%s",vetM[i].nome);
             free(vetM);
         }
         if (contm > 1){
-            printf("\n\tJogadores que menos atuaram no(a) %s em ordem alfabetica com %d partidas: ", jogadorm.sele, jogadorm.part_sel);
+            printf("\n\tJogadores que menos atuaram no(a) %s em ordem alfabética com %d partidas: ", jogadorm.sele, jogadorm.part_sel);
             for(int i=0; i<contm; i++) printf("\n\t%s",vetm[i].nome);    
             free(vetm);  
         }
@@ -220,11 +652,11 @@ void Q3(char* arv){
         if(contm > 1)qsort(vetm, contm, sizeof(TJ), compara_TJ);
 
         if(contM > 1){
-            printf("\n\tJogadores que mais atuaram no total em ordem alfabetica com %d partidas:\n", jogadorM.part_sel);
+            printf("\n\tJogadores que mais atuaram no total em ordem alfabética com %d partidas:\n", jogadorM.part_sel);
             for(int i=0; i<contM; i++) printf("\n\t%d. %s (%s)",vetM[i].id,vetM[i].nome,vetM[i].sele);
         }
         if (contm > 1){
-            printf("\n\tJogadores que menos atuaram no total em ordem alfabetica com %d partidas:\n", jogadorm.part_sel);
+            printf("\n\tJogadores que menos atuaram no total em ordem alfabética com %d partidas:\n", jogadorm.part_sel);
             for(int i=0; i<contm; i++) printf("\n\t%d. %s (%s)",vetm[i].id,vetm[i].nome,vetm[i].sele);        
         }
         if(contM > 1) free(vetM);
@@ -283,10 +715,10 @@ void Q4(char* tabela){
     }
     
     if(contM == 1){
-        printf("\n\t%s eh a maior selecao com %d jogadores\n",maior_sel,respM);
+        printf("\n\t%s eh a maior seleção com %d jogadores\n",maior_sel,respM);
     }
     if (contm == 1){
-        printf("\n\t%s eh a menor selecao com %d jogadores\n",menor_sel,respm);
+        printf("\n\t%s eh a menor seleção com %d jogadores\n",menor_sel,respm);
     }
     
     if(contM > 1 || contm > 1){
@@ -323,11 +755,11 @@ void Q4(char* tabela){
         if(contM > 1)qsort(vetM, contM, sizeof(char*), compara_str);
         if(contm > 1)qsort(vetm, contm, sizeof(char*), compara_str);
         if(contM > 1){
-            printf("\n\tMaiores selecoes empatadas em ordem alfabetica com %d jogadores: \n",respM);
+            printf("\n\tMaiores seleções empatadas em ordem alfabética com %d jogadores: \n",respM);
             for(int i=0; i<contM; i++) printf("\n\t%s",vetM[i]);
         }
         if (contm > 1){
-            printf("\n\tMenores selecoes empatadas em ordem alfabetica com %d jogadores: \n",respm);
+            printf("\n\tMenores seleções empatadas em ordem alfabética com %d jogadores: \n",respm);
             for(int i=0; i<contm; i++) printf("\n\t%s",vetm[i]);        }
         
         if(contM > 1){
@@ -494,7 +926,7 @@ void Q9(char* tabela, char * arv){
         }
     }
 
-    if(qtd_maiores == 1) printf("\n\t%s eh a selecao com mais jogadores que atuam fora do seu país de origem com %d jogadores.\n", resp_sele, maior);
+    if(qtd_maiores == 1) printf("\n\t%s eh a seleção com mais jogadores que atuam fora do seu país de origem com %d jogadores.\n", resp_sele, maior);
 
     if(qtd_maiores > 1){
         char **vet = (char**)malloc((sizeof(char*))*qtd_maiores);
@@ -542,6 +974,10 @@ void Q9(char* tabela, char * arv){
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Q10(char* tabela, char * arv){
     FILE * fp = fopen(tabela, "rb");
+    if(!fp){
+        printf("\n\n\tPREZADO USUARIO: Todos os jogadores foram excluidos!");
+        return;
+    }
     int qtd, num, cont, tmp, indice, qtd_maiores, maior = INT_MIN;
     char sele[21], aux[25], resp_sele[21];
     char * vet;
@@ -624,7 +1060,10 @@ void Q10(char* tabela, char * arv){
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Q11(char* arv,int ch){
     FILE* fp = fopen(arv,"rb");
-    if(!fp) exit(1);
+    if(!fp){
+        printf("\n\n\tPREZADO USUARIO: Todos os jogadores foram excluidos!");
+        return;
+    }
     fclose(fp);
     
     char resp[21];
@@ -926,8 +1365,8 @@ void vira_capitao(char * arv, int id){
     
 }
 
-void deixa_capitao(char * arv, int id, int t){
-    char resp[20], sele_tmp[20], aux[20], arq_maior[25];
+void deixa_capitao(char * arv, int id, int t,int ver){
+    char resp[20], sele_tmp[20], aux[20], arq_maior[25] = "DEU_RUIM.bin";
     int qtd, tmp, num, partidas = INT_MIN, id_maior;
     strcpy(resp,TABM_busca(arv,id));
     FILE* fj = fopen(resp,"rb");
@@ -940,7 +1379,7 @@ void deixa_capitao(char * arv, int id, int t){
     for(i = 0; a.chaves[i].id != id; i++);
     
     if(!a.chaves[i].capitao){
-        //printf("\n\n\tPREZADO USUARIO: O %s nao eh capitao!",a.chaves[i].nome);
+        if(ver) printf("\n\n\tPREZADO USUARIO: O %s nao eh capitao!",a.chaves[i].nome);
         return;
     }
     a.chaves[i].capitao = 0;
@@ -956,8 +1395,10 @@ void deixa_capitao(char * arv, int id, int t){
 
     while(fread(&sele_tmp, sizeof(char)*20, 1, fp) == 1){
         fread(&qtd, sizeof(int), 1, fp);
-        tmp = 0;
-        while((tmp != qtd) && (fread(&num, sizeof(int), 1, fp) == 1)){
+        tmp = 0; int lim = qtd;
+        while((tmp != lim) && (fread(&num, sizeof(int), 1, fp) == 1)){
+            if(num == -1) qtd--;
+            if(!qtd) return;
             if(strcmp(sele_tmp,selecao) == 0){ //Tirar o capitão
                 strcpy(aux,TABM_busca(arv,num));
                 if(strcmp(aux,"NULL") != 0){
@@ -983,12 +1424,16 @@ void deixa_capitao(char * arv, int id, int t){
     int j;
     for(j = 0; jog_maior.chaves[j].id != id_maior; j++);
     jog_maior.chaves[j].capitao = 1;
-    fj = fopen(arq_maior,"wb");
-    fwrite(&jog_maior,sizeof(TABM),1,fj);
-    fclose(fj);
-    //printf("\n");
-    //printf("\n\tAlterado com sucesso!");
-    //printf("\n\t%s eh o novo capitao do(a) %s",jog_maior.chaves[j].nome, jog_maior.chaves[j].sele);
+    if(strcmp(arq_maior,"DEU_RUIM.bin") != 0){
+        fj = fopen(arq_maior,"wb");
+        fwrite(&jog_maior,sizeof(TABM),1,fj);
+        fclose(fj);
+        if(ver){
+            printf("\n");
+            printf("\n\tAlterado com sucesso!");
+            printf("\n\t%s eh o novo capitao do(a) %s",jog_maior.chaves[j].nome, jog_maior.chaves[j].sele);
+        }
+    }
     return;
 }
 
@@ -996,7 +1441,7 @@ void deixa_capitao(char * arv, int id, int t){
 void Q12_7(char* arv, int id, int op, int t){
 
     if(op) vira_capitao(arv, id);
-    else deixa_capitao(arv, id, t);
+    else deixa_capitao(arv, id, t,1);
 
     return;
 }
@@ -1093,7 +1538,7 @@ char* Q14_R(char* arv, int t){
     fl = fopen("Tabelas/Capitães.bin","rb");
     int id_cap;
     while(fread(&id_cap,sizeof(int),1,fl)){
-        deixa_capitao(arv,id_cap,t);
+        deixa_capitao(arv,id_cap,t, 1);
         strcpy(arv,TABM_remover(arv,id_cap,t));
         remove_tabela("Tabelas/Nacionalidades.bin",id_cap);
     }
@@ -1139,7 +1584,7 @@ char* Q15(char* arv,int idade ,int t){
     fl = fopen("Tabelas/idade.bin","rb");
     int id_cap;
     while(fread(&id_cap,sizeof(int),1,fl)){
-        //deixa_capitao(arv,id_cap,t);
+        deixa_capitao(arv,id_cap,t, 0);
         strcpy(arv,TABM_remover(arv,id_cap,t));
         remove_tabela("Tabelas/Nacionalidades.bin",id_cap);
     }
@@ -1185,7 +1630,7 @@ char* Q16(char* arv,int t,char* sele, char* pais){
     fl = fopen("Tabelas/a.bin","rb");
     int id_cap;
     while(fread(&id_cap,sizeof(int),1,fl)){
-        //deixa_capitao(arv,id_cap,t);
+        deixa_capitao(arv,id_cap,t,0);
         strcpy(arv,TABM_remover(arv,id_cap,t));
         remove_tabela("Tabelas/Nacionalidades.bin",id_cap);
     }
@@ -1231,7 +1676,7 @@ char* Q17(char* arv,int t){
     fl = fopen("Tabelas/aux.bin","rb");
     int id;
     while(fread(&id,sizeof(int),1,fl)){
-        //deixa_capitao(arv,id,t);
+        deixa_capitao(arv,id,t,0);
         strcpy(arv,TABM_remover(arv,id,t));
         remove_tabela("Tabelas/Nacionalidades.bin",id);
     }
@@ -1277,6 +1722,7 @@ char* Q18(char* arv,int t){
     fl = fopen("Tabelas/b.bin","rb");
     int id;
     while(fread(&id,sizeof(int),1,fl)){
+        deixa_capitao(arv,id,t,0);
         strcpy(arv,TABM_remover(arv,id,t));
         remove_tabela("Tabelas/Nacionalidades.bin",id);
     }
@@ -1322,6 +1768,7 @@ char* Q19(char* arv,int t, char * selecao){
     fl = fopen("Tabelas/c.bin","rb");
     int id;
     while(fread(&id,sizeof(int),1,fl)){
+        deixa_capitao(arv,id,t,0);
         strcpy(arv,TABM_remover(arv,id,t));
         remove_tabela("Tabelas/Nacionalidades.bin",id);
     }
@@ -1351,7 +1798,7 @@ char* Q20(char* arv,int t){
     fl = fopen("Tabelas/rem.bin","rb");
     int id;
     while(fread(&id,sizeof(int),1,fl)){
-        deixa_capitao(arv,id,t);
+        deixa_capitao(arv,id,t,0);
         strcpy(arv,TABM_remover(arv,id,t));
         remove_tabela("Tabelas/Nacionalidades.bin",id);
     }

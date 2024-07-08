@@ -14,8 +14,6 @@ int main(void){
     le_dados("EURO.txt", &raiz, t, &cont);
     tabela_nacionalidade("EURO.txt");
     tabela_posicoes("EURO.txt");
-    //printa_nacionalidades("Tabelas/Nacionalidades.bin");
-    //TABM_imprime(&raiz,t);
     do{
         printf("\n\n\t0 - Sair\n\n\t1 ao 20 - Questoes\n\n\t21 - Menu");
         printf("\n");
@@ -24,8 +22,34 @@ int main(void){
         switch (opcao)
         {
         case 1:
-            /* (1) Retorno do jogador mais novo e mais velho da competição, ilustrando essas mesmas informações
-            por seleções e por posições; */
+            int m;
+            printf("\n\n\t=====================================================================================================");
+            printf("\n\n\t1 - Geral\n\n\t2 - Nacionalidade\n\n\t3 - Posição");
+            printf("\n\n\t=====================================================================================================");
+            printf("\n");
+            printf("\n\n\tDigite uma das opcoes: ");
+            scanf("%d",&m);
+            if(m == 1){
+                printf("\n\n\t=====================================================================================================");
+                printf("\n\tJOGADORES MAIS VELHO E MAIS NOVO DA COMPETIÇÂO: \n");
+                Q1_geral(raiz);
+                printf("\n\n\t=====================================================================================================");
+                printf("\n");
+            }
+            if(m == 2){
+                printf("\n\n\t=====================================================================================================");
+                printf("\n\tJOGADORES MAIS VELHO E MAIS NOVO DE CADA SELEÇÃO: \n");
+                Q1_nacionalidade("Tabelas/Nacionalidades.bin",raiz);
+                printf("\n\n\t=====================================================================================================");
+                printf("\n");
+            }
+            if(m ==3){
+                printf("\n\n\t=====================================================================================================");
+                printf("\n\tJOGADORES MAIS VELHO E MAIS NOVO DE CADA POSIÇÃO: \n");
+                Q1_posicao("Tabelas/Posições.bin",raiz);
+                printf("\n\n\t=====================================================================================================");
+                printf("\n");
+            }
             break;
         case 2:
             printf("\n\n\t=====================================================================================================");
@@ -220,8 +244,6 @@ int main(void){
                 printf("\n\n\tREMOVENDO TODOS OS ATUAIS CAPITÃES");
                 strcpy(raiz,Q14_R(raiz,t));
                 printf("\n\n\tTABELAS ATUALIZADAS COM SUCESSO!");
-                //printa_nacionalidades("Tabelas/Nacionalidades.bin");
-                //printa_arqb("Arquivos/0068.bin",t);
             }
             else {
                 printf("\n\n\tCAPITÃES E SUAS RESPECTIVAS SELEÇÕES: ");
@@ -235,7 +257,7 @@ int main(void){
             printf("\tDigite a idade: ");
             scanf("%d",&idade);
             printf("\n\n\t=====================================================================================================");
-            printf("\n\n\tJOGADORES COM MAIS QuE %d ANOS EXCLUÍDOS COM SUCESSO: \n",idade);
+            printf("\n\n\tJOGADORES COM MAIS QUE %d ANOS EXCLUÍDOS COM SUCESSO!\n",idade);
             Q15(raiz,idade,t);
             printf("\n\n\t=====================================================================================================");
             printf("\n");
@@ -246,21 +268,21 @@ int main(void){
             scanf("%s",sele);
             scanf("%s",paiis);
             printf("\n\n\t=====================================================================================================");
-            printf("\n\n\tJOGADORES DO(A) %s QUE JOGAM NO(A) %s EXCLUÍDOS COM SUCESSO: \n",sele,paiis);
+            printf("\n\n\tJOGADORES DO(A) %s QUE JOGAM NO(A) %s EXCLUÍDOS COM SUCESSO!\n",sele,paiis);
             Q16(raiz,t,sele,paiis);
             printf("\n\n\t=====================================================================================================");
             printf("\n");
             break;
         case 17:
             printf("\n\n\t=====================================================================================================");
-            printf("\n\n\tJOGADORES NÃO ATUAM NO PAÍS DE ORIGEM EXCLUÍDOS COM SUCESSO: \n");
+            printf("\n\n\tJOGADORES NÃO ATUAM NO PAÍS DE ORIGEM EXCLUÍDOS COM SUCESSO!\n");
             Q17(raiz,t);
             printf("\n\n\t=====================================================================================================");
             printf("\n");
             break;
         case 18:
             printf("\n\n\t=====================================================================================================");
-            printf("\n\n\tJOGADORES ATUAM NO PAÍS DE ORIGEM EXCLUÍDOS COM SUCESSO: \n");
+            printf("\n\n\tJOGADORES ATUAM NO PAÍS DE ORIGEM EXCLUÍDOS COM SUCESSO!\n");
             Q18(raiz,t);
             printf("\n\n\t=====================================================================================================");
             printf("\n");
@@ -270,7 +292,7 @@ int main(void){
             printf("\tDigite o seleção: ");
             scanf("%s",selee);
             printf("\n\n\t=====================================================================================================");
-            printf("\n\n\tJOGADORES DO(A) %s EXCLUÍDOS COM SUCESSO: \n",selee);
+            printf("\n\n\tJOGADORES DO(A) %s EXCLUÍDOS COM SUCESSO!\n",selee);
             Q19(raiz,t,selee);
             printf("\n\n\t=====================================================================================================");
             printf("\n");
@@ -278,7 +300,7 @@ int main(void){
         case 20:
             Q20(raiz,t);
             printf("\n\n\t=====================================================================================================");
-            printf("\n\n\tJOGADORES DO CONJUNTO EXCLUÍDOS COM SUCESSO: \n");
+            printf("\n\n\tJOGADORES DO CONJUNTO EXCLUÍDOS COM SUCESSO!");
             printf("\n\n\t=====================================================================================================");
             printf("\n");
             break;
@@ -299,6 +321,13 @@ int main(void){
             break;
         case 23:
             printa_nacionalidades("Tabelas/Nacionalidades.bin");
+            break;
+        case 24:
+            printf("\n");
+            printf("\t=====================================================================================================");
+            printa_posicoes("Tabelas/Posições.bin");
+            printf("\n\n");
+            printf("\t=====================================================================================================");
             break;
         default:
             if(opcao != 0) printf("Opcao invalida!!!\n");
